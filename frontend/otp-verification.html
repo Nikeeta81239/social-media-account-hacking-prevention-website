@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OTP Verification | AI Cyber Shield</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{
+    background:linear-gradient(135deg,#020617,#0f172a);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#f1f5f9;
+}
+.otp-container{
+    background:rgba(15,23,42,.9);
+    border:1px solid rgba(245,158,11,.4);
+    border-radius:20px;
+    padding:40px;
+    max-width:450px;
+    width:100%;
+    box-shadow:0 0 60px rgba(245,158,11,.15);
+}
+.header{text-align:center;margin-bottom:20px;}
+.header i{font-size:3rem;color:#f59e0b;}
+.header h1{
+    font-family:'Orbitron',sans-serif;
+    margin-top:10px;
+    background:linear-gradient(90deg,#f59e0b,#fde047);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+.warning{
+    background:rgba(245,158,11,.15);
+    border-left:4px solid #f59e0b;
+    padding:15px;
+    border-radius:10px;
+    font-size:.9rem;
+    color:#fde68a;
+    margin-bottom:20px;
+}
+.otp-box{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:25px;
+}
+.otp-box input{
+    width:60px;
+    height:65px;
+    text-align:center;
+    font-size:1.8rem;
+    border-radius:12px;
+    border:2px solid rgba(245,158,11,.4);
+    background:#020617;
+    color:#f1f5f9;
+}
+button{
+    width:100%;
+    padding:15px;
+    background:linear-gradient(90deg,#f59e0b,#facc15);
+    border:none;
+    border-radius:12px;
+    color:#020617;
+    font-size:1.1rem;
+    font-weight:600;
+    cursor:pointer;
+}
+.timer{text-align:center;margin-bottom:15px;color:#fde68a;}
+</style>
+</head>
+
+<body>
+<div class="otp-container">
+    <div class="header">
+        <i class="fas fa-shield-alt"></i>
+        <h1>OTP Verification</h1>
+    </div>
+
+    <div class="warning">
+        OTP has been sent to your registered Gmail
+    </div>
+
+    <div class="timer">
+        OTP expires in <span id="timer">02:00</span>
+    </div>
+
+    <form id="otpForm">
+        <div class="otp-box">
+            <input maxlength="1" class="otp-input">
+            <input maxlength="1" class="otp-input">
+            <input maxlength="1" class="otp-input">
+            <input maxlength="1" class="otp-input">
+        </div>
+        <button type="submit">Verify OTP</button>
+    </form>
+</div>
+
+<script>
+// Auto focus next
+const inputs = document.querySelectorAll(".otp-input");
+inputs.forEach((input,i)=>{
+    input.addEventListener("input",()=>{
+        if(input.value && i<inputs.length-1) inputs[i+1].focus();
+    });
+});
+
+// Timer
+let time = 120;
+const timerEl = document.getElementById("timer");
+const countdown = setInterval(()=>{
+    const m = String(Math.floor(time/60)).padStart(2,"0");
+    const s = String(time%60).padStart(2,"0");
+    timerEl.textContent = `${m}:${s}`;
+    if(time-- <= 0){
+        clearInterval(countdown);
+        alert("OTP expired. Login again.");
+        window.location.href = "login.html";
+    }
+},1000);
+
+// Verify OTP
+document.getElementById("otpForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+
+    let otp="";
+    inputs.forEach(i=>otp+=i.value);
+
+    const user_id = localStorage.getItem("user_id");
+    if(!user_id){
+        alert("No user info found. Login again.");
+        window.location.href="login.html";
+        return;
+    }
+
+    try{
+        const res = await fetch("http://127.0.0.1:5000/api/verify-otp",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({user_id, otp})
+        });
+
+        const data = await res.json();
+
+        if(data.verified){
+            localStorage.setItem("token", data.token);
+            alert("OTP Verified Successfully!");
+            window.location.href = "/dashboard"; // or admin dashboard if role stored
+        } else {
+            alert(data.message || "Invalid OTP");
+            inputs.forEach(i=>i.value="");
+            inputs[0].focus();
+        }
+
+    } catch(err){
+        console.error(err);
+        alert("Server error. Try again later.");
+    }
+});
+</script>
+</body>
+</html>

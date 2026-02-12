@@ -1,0 +1,19 @@
+# backend/config.py
+
+class Config:
+    SECRET_KEY = "THIS_IS_A_VERY_STRONG_SECRET_KEY_32_CHARS_MINIMUM_2026"
+    JWT_SECRET = "jwt-secret-key"
+
+    # ✅ GMAIL SMTP (USE APP PASSWORD)
+    SMTP_EMAIL = "nikeetareddy81239@gmail.com"
+    SMTP_PASSWORD = "zomjfqgjmzpbreuh"
+
+    OTP_EXPIRY_SECONDS = 120 # 5 minutes
+
+    DB_CONFIG = {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": "dbms123456789@#",
+        "database": "ai_social_security"
+    }

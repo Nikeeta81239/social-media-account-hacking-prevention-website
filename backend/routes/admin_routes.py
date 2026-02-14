@@ -4,7 +4,7 @@ from security.jwt_auth import token_required
 
 admin_bp = Blueprint("admin", __name__)
 
-@admin_bp.route("/api/admin/dashboard")
+@admin_bp.route("/admin/dashboard")
 @token_required(role="admin")  # only accessible to admins
 def admin_dashboard(user_id):
     db = get_db()

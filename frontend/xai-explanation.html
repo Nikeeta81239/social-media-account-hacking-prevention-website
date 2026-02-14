@@ -1,222 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>XAI Explanation | AI Cyber Shield</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>XAI Explanation | AI Cyber Shield</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Fonts & Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Fonts & Icons -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{
-  background:linear-gradient(135deg,#020617,#0f172a);
-  color:#f1f5f9;min-height:100vh;
-}
-.cyber-grid{
-  position:fixed;inset:0;
-  background:
-    linear-gradient(rgba(6,182,212,.02) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(6,182,212,.02) 1px,transparent 1px);
-  background-size:30px 30px;
-  z-index:-1;
-}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
 
-/* NAVBAR */
-.navbar{
-  background:rgba(15,23,42,.9);
-  padding:15px 30px;
-  display:flex;justify-content:space-between;align-items:center;
-  border-bottom:1px solid rgba(6,182,212,.2);
-}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo h2{
-  font-family:'Orbitron',sans-serif;
-  background:linear-gradient(90deg,#06b6d4,#22d3ee);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
+    body {
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
 
-/* LAYOUT */
-.main{display:grid;grid-template-columns:240px 1fr;}
-.sidebar{
-  background:rgba(15,23,42,.8);
-  padding:25px;
-  border-right:1px solid rgba(6,182,212,.2);
-}
-.sidebar a{
-  display:flex;gap:10px;align-items:center;
-  padding:12px;margin-bottom:10px;
-  color:#94a3b8;text-decoration:none;border-radius:8px;
-}
-.sidebar a:hover,.sidebar a.active{
-  background:rgba(6,182,212,.15);color:#06b6d4;
-}
+    .cyber-grid {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(rgba(6, 182, 212, .02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, .02) 1px, transparent 1px);
+      background-size: 30px 30px;
+      z-index: -1;
+    }
 
-/* CONTENT */
-.content{padding:30px;}
-.header{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:25px;
-}
+    /* NAVBAR */
+    .navbar {
+      background: rgba(15, 23, 42, .9);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(6, 182, 212, .2);
+    }
 
-/* BOXES */
-.box{
-  background:rgba(15,23,42,.85);
-  border-radius:12px;
-  border:1px solid rgba(6,182,212,.2);
-  padding:20px;
-  margin-bottom:25px;
-}
-.box h3{
-  margin-bottom:12px;
-  color:#22d3ee;
-}
-.box p{
-  color:#cbd5f5;
-  font-size:.95rem;
-  line-height:1.6;
-}
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* LIST */
-.reason-list li{
-  margin-bottom:8px;
-  padding-left:10px;
-}
+    .logo h2 {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(90deg, #06b6d4, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-/* BADGES */
-.badge{
-  display:inline-block;
-  padding:6px 12px;
-  border-radius:20px;
-  font-size:.75rem;
-  font-weight:600;
-}
-.fake{background:#ef4444;color:#2b0202;}
-.genuine{background:#10b981;color:#022c22;}
+    /* LAYOUT */
+    .main {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+    }
 
-/* FOOTER */
-.footer{text-align:center;margin-top:30px;color:#94a3b8;font-size:.85rem;}
-</style>
+    .sidebar {
+      background: rgba(15, 23, 42, .8);
+      padding: 25px;
+      border-right: 1px solid rgba(6, 182, 212, .2);
+    }
+
+    .sidebar a {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 10px;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: rgba(6, 182, 212, .15);
+      color: #06b6d4;
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 30px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    /* BOXES */
+    .box {
+      background: rgba(15, 23, 42, .85);
+      border-radius: 12px;
+      border: 1px solid rgba(6, 182, 212, .2);
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .box h3 {
+      margin-bottom: 12px;
+      color: #22d3ee;
+    }
+
+    .box p {
+      color: #cbd5f5;
+      font-size: .95rem;
+      line-height: 1.6;
+    }
+
+    /* LIST */
+    .reason-list li {
+      margin-bottom: 8px;
+      padding-left: 10px;
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+
+    .fake {
+      background: #ef4444;
+      color: #2b0202;
+    }
+
+    .genuine {
+      background: #10b981;
+      color: #022c22;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #94a3b8;
+      font-size: .85rem;
+    }
+  </style>
 </head>
 
 <body>
-<div class="cyber-grid"></div>
+  <div class="cyber-grid"></div>
 
-<nav class="navbar">
-  <div class="logo">
-    <i class="fas fa-shield-halved"></i>
-    <h2>AI Cyber Shield</h2>
+  <nav class="navbar">
+    <div class="logo">
+      <i class="fas fa-shield-halved"></i>
+      <h2>AI Cyber Shield</h2>
+    </div>
+    <span>XAI Module</span>
+  </nav>
+
+  <div class="main">
+
+    <aside class="sidebar">
+      <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
+      <a href="/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
+      <a href="/xai" class="active"><i class="fas fa-brain"></i> XAI Explanation</a>
+      <a href="/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
+      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation</a>
+      <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+    </aside>
+
+
+    <section class="content">
+
+      <div class="header">
+        <h1>Explainable AI Decision</h1>
+        <span id="finalDecision" class="badge">Loading...</span>
+      </div>
+
+      <!-- MODEL INFO -->
+      <div class="box">
+        <h3>🤖 Model Used</h3>
+        <p>
+          This system uses a <b>CatBoost Classifier</b> trained on multiple
+          social media datasets. It captures feature dependency and complex
+          behavior patterns for detecting fake or bot accounts.
+        </p>
+      </div>
+
+      <!-- LIME EXPLANATION -->
+      <div class="box">
+        <h3>🔍 LIME – Local Explanation</h3>
+        <p>Why this specific account was classified:</p>
+        <ul class="reason-list" id="limeReasons">
+          <li>Loading explanation...</li>
+        </ul>
+      </div>
+
+      <!-- ELI5 EXPLANATION -->
+      <div class="box">
+        <h3>🌍 ELI5 – Global Feature Importance</h3>
+        <p>Top features influencing overall model decisions:</p>
+        <ul class="reason-list">
+          <li>Followers–Following Ratio</li>
+          <li>Account Age</li>
+          <li>Post Frequency</li>
+          <li>Engagement Rate</li>
+          <li>Profile Completeness</li>
+        </ul>
+      </div>
+
+      <!-- FINAL DECISION -->
+      <div class="box">
+        <h3>✅ Final AI Decision</h3>
+        <p id="decisionText">
+          Evaluating risk and trust level...
+        </p>
+      </div>
+
+      <div class="footer">
+        © 2026 AI Cyber Shield — Explainable AI Module
+      </div>
+
+    </section>
   </div>
-  <span>XAI Module</span>
-</nav>
-
-<div class="main">
-
-<aside class="sidebar">
-    <a href="http://127.0.0.1:5000/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
-    <a href="http://127.0.0.1:5000/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
-    <a href="http://127.0.0.1:5000/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
-    <a href="http://127.0.0.1:5000/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
-    <a href="http://127.0.0.1:5000/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
-    <a href="http://127.0.0.1:5000/login"><i class="fas fa-right-from-bracket"></i> Logout</a>
-</aside>
-
-
-  <section class="content">
-
-    <div class="header">
-      <h1>Explainable AI Decision</h1>
-      <span id="finalDecision" class="badge">Loading...</span>
-    </div>
-
-    <!-- MODEL INFO -->
-    <div class="box">
-      <h3>🤖 Model Used</h3>
-      <p>
-        This system uses a <b>CatBoost Classifier</b> trained on multiple
-        social media datasets. It captures feature dependency and complex
-        behavior patterns for detecting fake or bot accounts.
-      </p>
-    </div>
-
-    <!-- LIME EXPLANATION -->
-    <div class="box">
-      <h3>🔍 LIME – Local Explanation</h3>
-      <p>Why this specific account was classified:</p>
-      <ul class="reason-list" id="limeReasons">
-        <li>Loading explanation...</li>
-      </ul>
-    </div>
-
-    <!-- ELI5 EXPLANATION -->
-    <div class="box">
-      <h3>🌍 ELI5 – Global Feature Importance</h3>
-      <p>Top features influencing overall model decisions:</p>
-      <ul class="reason-list">
-        <li>Followers–Following Ratio</li>
-        <li>Account Age</li>
-        <li>Post Frequency</li>
-        <li>Engagement Rate</li>
-        <li>Profile Completeness</li>
-      </ul>
-    </div>
-
-    <!-- FINAL DECISION -->
-    <div class="box">
-      <h3>✅ Final AI Decision</h3>
-      <p id="decisionText">
-        Evaluating risk and trust level...
-      </p>
-    </div>
-
-    <div class="footer">
-      © 2026 AI Cyber Shield — Explainable AI Module
-    </div>
-
-  </section>
-</div>
 
 
 
-<script>
-// ----- Role-based Access -----
-const role = localStorage.getItem('role'); // 'user' or 'admin'
-if (!role) {
-    alert("Please login first.");
-    window.location.href = '/login';
-}
+  <script>
+    // ----- Role-based Access -----
+    const role = localStorage.getItem('role'); // 'user' or 'admin'
+    if (!role) {
+      alert("Please login first.");
+      window.location.href = '/login';
+    }
 
-const userId = localStorage.getItem("user_id");
-if (!userId) {
-    alert("User not identified.");
-    window.location.href = '/dashboard';
-}
+    const userId = localStorage.getItem("user_id");
+    if (!userId) {
+      alert("User not identified.");
+      window.location.href = '/dashboard';
+    }
 
-// ----- Fetch Latest XAI Explanation -----
-async function fetchXAI() {
-    const finalDecisionEl = document.getElementById("finalDecision");
-    const limeListEl = document.getElementById("limeReasons");
-    const decisionTextEl = document.getElementById("decisionText");
+    // ----- Fetch Latest XAI Explanation -----
+    async function fetchXAI() {
+      const finalDecisionEl = document.getElementById("finalDecision");
+      const limeListEl = document.getElementById("limeReasons");
+      const decisionTextEl = document.getElementById("decisionText");
 
-    // Loading placeholders
-    finalDecisionEl.textContent = "Loading...";
-    finalDecisionEl.className = "badge";
-    limeListEl.innerHTML = `<li>Loading explanation...</li>`;
-    decisionTextEl.textContent = "Evaluating risk and trust level...";
+      // Loading placeholders
+      finalDecisionEl.textContent = "Loading...";
+      finalDecisionEl.className = "badge";
+      limeListEl.innerHTML = `<li>Loading explanation...</li>`;
+      decisionTextEl.textContent = "Evaluating risk and trust level...";
 
-    try {
-        const response = await fetch(`http://localhost:5000/api/xai/latest?user_id=${userId}`);
+      try {
+        const response = await fetch(`/api/xai/latest?user_id=${userId}`);
         if (!response.ok) throw new Error("Failed to fetch XAI data");
 
         const data = await response.json();
 
         if (data.message) {
-            document.body.innerHTML =
-                "<h2 style='padding:40px;text-align:center;color:#94a3b8'>No suspicious activity detected.</h2>";
-            return;
+          document.body.innerHTML =
+            "<h2 style='padding:40px;text-align:center;color:#94a3b8'>No suspicious activity detected.</h2>";
+          return;
         }
 
         // Final decision badge
@@ -226,30 +280,31 @@ async function fetchXAI() {
         // LIME top reasons
         limeListEl.innerHTML = "";
         if (data.top_reasons) {
-            data.top_reasons.split(",").forEach(reason => {
-                const li = document.createElement("li");
-                li.textContent = "• " + reason.trim();
-                limeListEl.appendChild(li);
-            });
+          data.top_reasons.split(",").forEach(reason => {
+            const li = document.createElement("li");
+            li.textContent = "• " + reason.trim();
+            limeListEl.appendChild(li);
+          });
         } else {
-            limeListEl.innerHTML = "<li>No local explanations available.</li>";
+          limeListEl.innerHTML = "<li>No local explanations available.</li>";
         }
 
         // What-if explanation
         decisionTextEl.innerHTML = data.what_if
-            ? `<b>What-if:</b> ${data.what_if}`
-            : "<b>What-if:</b> No alternative scenarios provided.";
+          ? `<b>What-if:</b> ${data.what_if}`
+          : "<b>What-if:</b> No alternative scenarios provided.";
 
-    } catch (err) {
+      } catch (err) {
         console.error("XAI fetch error:", err);
         finalDecisionEl.textContent = "Error";
         limeListEl.innerHTML = "<li style='color:red'>Failed to load explanations</li>";
         decisionTextEl.textContent = "Unable to evaluate risk at this time.";
+      }
     }
-}
 
-// Fetch XAI data on page load
-fetchXAI();
-</script>
+    // Fetch XAI data on page load
+    fetchXAI();
+  </script>
 </body>
+
 </html>

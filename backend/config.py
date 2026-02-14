@@ -6,9 +6,9 @@ class Config:
 
     # ✅ GMAIL SMTP (USE APP PASSWORD)
     SMTP_EMAIL = "nikeetareddy81239@gmail.com"
-    SMTP_PASSWORD = "zomjfqgjmzpbreuh"
+    SMTP_PASSWORD = "dpsszjjbpcpudnvr"
 
-    OTP_EXPIRY_SECONDS = 120 # 5 minutes
+    OTP_EXPIRY_SECONDS = 180 # 3 minutes
 
     DB_CONFIG = {
         "host": "localhost",

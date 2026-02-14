@@ -1,235 +1,341 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Activity Logs | AI Cyber Shield</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Activity Logs | AI Cyber Shield</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Fonts & Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Fonts & Icons -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{
-  background:linear-gradient(135deg,#020617,#0f172a);
-  color:#f1f5f9;min-height:100vh;
-}
-.cyber-grid{
-  position:fixed;inset:0;
-  background:
-    linear-gradient(rgba(6,182,212,.02) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(6,182,212,.02) 1px,transparent 1px);
-  background-size:30px 30px;
-  z-index:-1;
-}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
 
-/* NAVBAR */
-.navbar{
-  background:rgba(15,23,42,.9);
-  padding:15px 30px;
-  display:flex;justify-content:space-between;align-items:center;
-  border-bottom:1px solid rgba(6,182,212,.2);
-}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo h2{
-  font-family:'Orbitron',sans-serif;
-  background:linear-gradient(90deg,#06b6d4,#22d3ee);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
+    body {
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
 
-/* LAYOUT */
-.main{display:grid;grid-template-columns:240px 1fr;}
-.sidebar{
-  background:rgba(15,23,42,.8);
-  padding:25px;
-  border-right:1px solid rgba(6,182,212,.2);
-}
-.sidebar a{
-  display:flex;gap:10px;align-items:center;
-  padding:12px;margin-bottom:10px;
-  color:#94a3b8;text-decoration:none;border-radius:8px;
-}
-.sidebar a:hover,.sidebar a.active{
-  background:rgba(6,182,212,.15);color:#06b6d4;
-}
+    .cyber-grid {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(rgba(6, 182, 212, .02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, .02) 1px, transparent 1px);
+      background-size: 30px 30px;
+      z-index: -1;
+    }
 
-/* CONTENT */
-.content{padding:30px;}
-.header{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:25px;
-}
+    /* NAVBAR */
+    .navbar {
+      background: rgba(15, 23, 42, .9);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(6, 182, 212, .2);
+    }
 
-/* FILTERS */
-.filters{
-  display:flex;gap:15px;flex-wrap:wrap;
-  margin-bottom:20px;
-}
-.filters select,.filters input{
-  background:#020617;
-  border:1px solid rgba(6,182,212,.3);
-  color:#f1f5f9;
-  padding:10px 12px;border-radius:8px;
-}
-.filters button{
-  background:#06b6d4;color:#020617;
-  border:none;padding:10px 18px;
-  border-radius:8px;cursor:pointer;
-  font-weight:600;
-}
-.filters button:hover{background:#22d3ee;}
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* TABLE */
-.table-box{
-  background:rgba(15,23,42,.8);
-  border-radius:12px;
-  border:1px solid rgba(6,182,212,.2);
-  overflow:hidden;
-}
-table{width:100%;border-collapse:collapse;}
-th,td{
-  padding:14px 16px;
-  border-bottom:1px solid rgba(6,182,212,.1);
-}
-th{background:rgba(30,41,59,.7);color:#94a3b8;text-align:left;}
-tr:hover{background:rgba(6,182,212,.05);}
+    .logo h2 {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(90deg, #06b6d4, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-.badge{
-  padding:5px 10px;border-radius:20px;
-  font-size:.75rem;font-weight:600;
-}
-.success{background:#10b981;color:#022c22;}
-.suspicious{background:#f59e0b;color:#2a1600;}
-.blocked{background:#ef4444;color:#2b0202;}
+    /* LAYOUT */
+    .main {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+    }
 
-.footer{text-align:center;margin-top:30px;color:#94a3b8;font-size:.85rem;}
-</style>
+    .sidebar {
+      background: rgba(15, 23, 42, .8);
+      padding: 25px;
+      border-right: 1px solid rgba(6, 182, 212, .2);
+    }
+
+    .sidebar a {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 10px;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: rgba(6, 182, 212, .15);
+      color: #06b6d4;
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 30px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .filters select,
+    .filters input {
+      background: #020617;
+      border: 1px solid rgba(6, 182, 212, .3);
+      color: #f1f5f9;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .filters button {
+      background: #06b6d4;
+      color: #020617;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .filters button:hover {
+      background: #22d3ee;
+    }
+
+    /* TABLE */
+    .table-box {
+      background: rgba(15, 23, 42, .8);
+      border-radius: 12px;
+      border: 1px solid rgba(6, 182, 212, .2);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(6, 182, 212, .1);
+    }
+
+    th {
+      background: rgba(30, 41, 59, .7);
+      color: #94a3b8;
+      text-align: left;
+    }
+
+    tr:hover {
+      background: rgba(6, 182, 212, .05);
+    }
+
+    .badge {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+
+    .success {
+      background: #10b981;
+      color: #022c22;
+    }
+
+    .suspicious {
+      background: #f59e0b;
+      color: #2a1600;
+    }
+
+    .blocked {
+      background: #ef4444;
+      color: #2b0202;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #94a3b8;
+      font-size: .85rem;
+    }
+  </style>
 </head>
 
 <body>
-<div class="cyber-grid"></div>
+  <div class="cyber-grid"></div>
 
-<nav class="navbar">
-  <div class="logo">
-    <i class="fas fa-shield-halved"></i>
-    <h2>AI Cyber Shield</h2>
+  <nav class="navbar">
+    <div class="logo">
+      <i class="fas fa-shield-halved"></i>
+      <h2>AI Cyber Shield</h2>
+    </div>
+    <i class="fas fa-user-circle"></i>
+  </nav>
+
+  <div class="main">
+
+    <aside class="sidebar">
+      <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="/activity-logs" class="active"><i class="fas fa-clock-rotate-left"></i> Activity
+        Logs</a>
+      <a href="/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
+      <a href="/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
+      <a href="/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
+      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation</a>
+      <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+    </aside>
+
+
+
+
+
+    <section class="content">
+      <div class="header">
+        <h1>User Activity Logs</h1>
+        <span>AI-monitored login history</span>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters">
+        <input type="date" id="dateFilter">
+        <select id="statusFilter">
+          <option value="">All Status</option>
+          <option value="Success">Success</option>
+          <option value="Suspicious">Suspicious</option>
+          <option value="Blocked">Blocked</option>
+        </select>
+        <button onclick="applyFilter()">Apply Filter</button>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>IP Address</th>
+              <th>Location</th>
+              <th>Device</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="logTable">
+            <tr>
+              <td colspan="6" style="text-align:center;color:#94a3b8">Loading logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer">
+        © 2026 AI Cyber Shield — Activity Monitoring Module
+      </div>
+    </section>
   </div>
-  <i class="fas fa-user-circle"></i>
-</nav>
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "/";
+    }
+    let logs = [];  // will store data from backend
 
-<div class="main">
+    // Load logs from backend API
+    async function loadBackendLogs() {
+      try {
+        const response = await fetch("/api/activity-logs"); // backend endpoint
+        if (!response.ok) throw new Error("Failed to fetch logs");
+        logs = await response.json();
+        renderLogs(logs);
+      } catch (err) {
+        console.error(err);
+        const tbody = document.getElementById("logTable");
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red">Error loading logs</td></tr>`;
+      }
+    }
 
- <aside class="sidebar">
-    <a href="http://127.0.0.1:5000/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
-    <a href="http://127.0.0.1:5000/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
-    <a href="http://127.0.0.1:5000/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
-    <a href="http://127.0.0.1:5000/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
-    <a href="http://127.0.0.1:5000/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
-    <a href="http://127.0.0.1:5000/api/login"><i class="fas fa-right-from-bracket"></i> Logout</a>
-</aside>
-
-
-  
-  
-
-  <section class="content">
-    <div class="header">
-      <h1>User Activity Logs</h1>
-      <span>AI-monitored login history</span>
-    </div>
-
-    <!-- FILTERS -->
-    <div class="filters">
-      <input type="date" id="dateFilter">
-      <select id="statusFilter">
-        <option value="">All Status</option>
-        <option value="Success">Success</option>
-        <option value="Suspicious">Suspicious</option>
-        <option value="Blocked">Blocked</option>
-      </select>
-      <button onclick="applyFilter()">Apply Filter</button>
-    </div>
-
-    <!-- TABLE -->
-    <div class="table-box">
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>IP Address</th>
-            <th>Location</th>
-            <th>Device</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="logTable">
-          <tr><td colspan="5" style="text-align:center;color:#94a3b8">Loading logs...</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="footer">
-      © 2026 AI Cyber Shield — Activity Monitoring Module
-    </div>
-  </section>
-</div>
-<script>
-  function logout(){
-    localStorage.clear();
-    window.location.href = "login.html";
-}
-let logs = [];  // will store data from backend
-
-// Load logs from backend API
-async function loadBackendLogs() {
-  try {
-    const response = await fetch("http://127.0.0.1:5000/api/activity-logs"); // backend endpoint
-    if (!response.ok) throw new Error("Failed to fetch logs");
-    logs = await response.json();
-    renderLogs(logs);
-  } catch (err) {
-    console.error(err);
-    const tbody = document.getElementById("logTable");
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red">Error loading logs</td></tr>`;
-  }
-}
-
-// Render logs in table
-function renderLogs(data){
-  const tbody=document.getElementById("logTable");
-  tbody.innerHTML="";
-  if(data.length===0){
-    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#94a3b8">No logs found</td></tr>`;
-    return;
-  }
-  data.forEach(l=>{
-    let cls=l.status==="Success"?"success":l.status==="Suspicious"?"suspicious":"blocked";
-    tbody.innerHTML+=`
+    // Render logs in table
+    function renderLogs(data) {
+      const tbody = document.getElementById("logTable");
+      tbody.innerHTML = "";
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8">No logs found</td></tr>`;
+        return;
+      }
+      data.forEach(l => {
+        let cls = l.status === "Success" || l.status === "success" ? "success" : l.status === "Suspicious" || l.status === "otp_pending" ? "suspicious" : "blocked";
+        tbody.innerHTML += `
       <tr>
         <td>${l.time}</td>
         <td>${l.ip}</td>
         <td>${l.loc}</td>
         <td>${l.dev}</td>
         <td><span class="badge ${cls}">${l.status}</span></td>
+        <td><i class="fas fa-trash" style="color:#ef4444;cursor:pointer" onclick="deleteLog(${l.log_id})"></i></td>
       </tr>`;
-  });
-}
+      });
+    }
 
-// Filter logs based on status
-function applyFilter(){
-  const status=document.getElementById("statusFilter").value;
-  let filtered=logs;
-  if(status) filtered=logs.filter(l=>l.status===status);
-  renderLogs(filtered);
-}
+    async function deleteLog(id) {
+      if (!confirm("Are you sure you want to delete this log?")) return;
+      try {
+        const res = await fetch("/api/delete-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ log_id: id })
+        });
+        if (res.ok) {
+          alert("Log deleted");
+          loadBackendLogs();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-// Load logs from backend on page load
-loadBackendLogs();
-</script>
+    // Filter logs based on status
+    function applyFilter() {
+      const status = document.getElementById("statusFilter").value;
+      let filtered = logs;
+      if (status) filtered = logs.filter(l => l.status === status);
+      renderLogs(filtered);
+    }
+
+    // Load logs from backend on page load
+    loadBackendLogs();
+  </script>
 
 
 </body>
+
 </html>

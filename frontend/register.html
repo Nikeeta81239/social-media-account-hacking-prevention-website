@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Register | AI Cyber Shield</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #020617, #0f172a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #f1f5f9;
+        }
+
+        .cyber-grid {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(6, 182, 212, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, .05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .register-container {
+            background: rgba(15, 23, 42, .9);
+            border: 1px solid rgba(16, 185, 129, .3);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: 0 0 60px rgba(16, 185, 129, .15);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo i {
+            font-size: 3rem;
+            color: #10b981;
+        }
+
+        .logo h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 10px;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: .9rem;
+            color: #94a3b8;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 2px solid rgba(16, 185, 129, .2);
+            background: #020617;
+            color: #f1f5f9;
+            font-size: 1rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, .3);
+        }
+
+        .meta-box {
+            background: rgba(30, 41, 59, .6);
+            border-left: 3px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 25px;
+            font-size: .85rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .meta-box a {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .meta-box a:hover {
+            text-decoration: underline;
+        }
+
+        .msg {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: .9rem;
+            display: none;
+        }
+
+        .msg.error {
+            background: rgba(239, 68, 68, .15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            display: block;
+        }
+
+        .msg.success {
+            background: rgba(16, 185, 129, .15);
+            border: 1px solid #10b981;
+            color: #6ee7b7;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="register-container">
+        <div class="logo">
+            <i class="fas fa-user-plus"></i>
+            <h1>Create Account</h1>
+            <p>Join AI Cyber Shield</p>
+        </div>
+
+        <div id="msgBox" class="msg"></div>
+
+        <form id="registerForm">
+            <div class="input-group">
+                <label>Gmail Address</label>
+                <input type="email" id="email" placeholder="yourname@gmail.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="password-box">
+                    <input type="password" id="password" placeholder="Min 6 characters" required minlength="6">
+                    <i class="fas fa-eye" id="togglePassword"></i>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <div class="password-box">
+                    <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+                    <i class="fas fa-eye" id="toggleConfirmPassword"></i>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Role</label>
+                <select id="roleSelect" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <!-- Module 8: Fake Profile Detection Input -->
+            <div id="userProfileFields">
+                <h4 style="margin-bottom: 10px; color: #10b981; font-size: 0.9rem;">Social Profile Metadata (for AI
+                    Analysis)</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="input-group">
+                        <label>Followers</label>
+                        <input type="number" id="followers" value="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Following</label>
+                        <input type="number" id="following" value="0" min="0">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Post Count</label>
+                    <input type="number" id="posts" value="0" min="0">
+                </div>
+            </div>
+
+            <button type="submit"><i class="fas fa-user-check"></i> Register</button>
+        </form>
+
+        <div class="meta-box">
+            Already have an account? <a href="/">Login Here</a>
+        </div>
+    </div>
+
+    <script>
+        // Eye Toggle
+        function setupToggle(toggleId, inputId) {
+            const toggle = document.getElementById(toggleId);
+            const input = document.getElementById(inputId);
+            toggle.addEventListener("click", () => {
+                if (input.type === "password") {
+                    input.type = "text";
+                    toggle.classList.replace("fa-eye", "fa-eye-slash");
+                } else {
+                    input.type = "password";
+                    toggle.classList.replace("fa-eye-slash", "fa-eye");
+                }
+            });
+        }
+        setupToggle("togglePassword", "password");
+        setupToggle("toggleConfirmPassword", "confirmPassword");
+
+        // Register Form
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const msgBox = document.getElementById("msgBox");
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const role = document.getElementById("roleSelect").value;
+
+            // Module 8 Metadata
+            const followers = parseInt(document.getElementById("followers").value) || 0;
+            const following = parseInt(document.getElementById("following").value) || 0;
+            const posts = parseInt(document.getElementById("posts").value) || 0;
+
+            if (password !== confirmPassword) {
+                msgBox.className = "msg error";
+                msgBox.textContent = "Passwords do not match!";
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password, role, followers, following, posts })
+                });
+
+                const data = await res.json();
+
+                if (res.status === 201) {
+                    msgBox.className = "msg success";
+                    msgBox.textContent = data.message;
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+                } else {
+                    msgBox.className = "msg error";
+                    msgBox.textContent = data.message || "Registration failed";
+                }
+
+            } catch (err) {
+                console.error(err);
+                msgBox.className = "msg error";
+                msgBox.textContent = "Server error. Please try again later.";
+            }
+        });
+    </script>
+</body>
+
+</html>

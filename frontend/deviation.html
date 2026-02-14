@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Deviation Analysis | AI Cyber Shield</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #020617, #0f172a);
+            color: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        .cyber-grid {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(6, 182, 212, .02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, .02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(15, 23, 42, .9);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(6, 182, 212, .2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h2 {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, #06b6d4, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* LAYOUT */
+        .main {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, .8);
+            padding: 25px;
+            border-right: 1px solid rgba(6, 182, 212, .2);
+        }
+
+        .sidebar a {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(6, 182, 212, .15);
+            color: #06b6d4;
+        }
+
+        /* CONTENT */
+        .content {
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        /* STATS CARDS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, .8);
+            border: 1px solid rgba(6, 182, 212, .2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card i {
+            font-size: 1.8rem;
+            color: #06b6d4;
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+        }
+
+        .stat-card p {
+            color: #94a3b8;
+            font-size: .9rem;
+        }
+
+        /* TABLE */
+        .table-box {
+            background: rgba(15, 23, 42, .8);
+            border-radius: 12px;
+            border: 1px solid rgba(6, 182, 212, .2);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(6, 182, 212, .1);
+        }
+
+        th {
+            background: rgba(30, 41, 59, .7);
+            color: #94a3b8;
+            text-align: left;
+        }
+
+        tr:hover {
+            background: rgba(6, 182, 212, .05);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* BAR */
+        .dev-bar-container {
+            background: rgba(30, 41, 59, .7);
+            border-radius: 4px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .dev-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1.5s ease-out;
+        }
+
+        /* CHART */
+        .chart-box {
+            background: rgba(15, 23, 42, .8);
+            border: 1px solid rgba(6, 182, 212, .2);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-box h3 {
+            margin-bottom: 15px;
+            color: #22d3ee;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 200px;
+            padding: 10px 0;
+        }
+
+        .bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 60px;
+            border-radius: 6px 6px 0 0;
+            transition: height 1s ease-out;
+            position: relative;
+        }
+
+        .bar-label {
+            font-size: .65rem;
+            color: #94a3b8;
+            margin-top: 6px;
+            text-align: center;
+            word-break: break-all;
+            max-width: 80px;
+        }
+
+        .bar-value {
+            font-size: .7rem;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: .85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cyber-grid"></div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-shield-halved"></i>
+            <h2>AI Cyber Shield</h2>
+        </div>
+        <span>Deviation Module</span>
+    </nav>
+
+    <div class="main">
+
+        <aside class="sidebar">
+            <a href="http://127.0.0.1:5000/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="http://127.0.0.1:5000/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
+            <a href="http://127.0.0.1:5000/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
+            <a href="http://127.0.0.1:5000/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
+            <a href="http://127.0.0.1:5000/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
+            <a href="http://127.0.0.1:5000/deviation" class="active"><i class="fas fa-chart-bar"></i> Deviation</a>
+            <a href="http://127.0.0.1:5000/"><i class="fas fa-right-from-bracket"></i> Logout</a>
+        </aside>
+
+        <section class="content">
+
+            <div class="header">
+                <h1>Risk Score Deviation Analysis</h1>
+                <span>Standard deviation of login risk scores</span>
+            </div>
+
+            <!-- OVERALL STATS -->
+            <div class="stats">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3 id="totalUsers">--</h3>
+                    <p>Users Analyzed</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3 id="meanDev">--</h3>
+                    <p>Mean Deviation</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-arrow-up"></i>
+                    <h3 id="maxDev">--</h3>
+                    <p>Max Deviation</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-calculator"></i>
+                    <h3>σ</h3>
+                    <p>Standard Deviation</p>
+                </div>
+            </div>
+
+            <!-- DEVIATION BAR CHART -->
+            <div class="chart-box">
+                <h3><i class="fas fa-chart-bar"></i> Deviation per User</h3>
+                <div class="bar-chart" id="deviationChart">
+                    <p style="color:#94a3b8;text-align:center;width:100%">Loading chart...</p>
+                </div>
+            </div>
+
+            <!-- DETAILED TABLE -->
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Email</th>
+                            <th>Events</th>
+                            <th>Mean Score</th>
+                            <th>Std Deviation (σ)</th>
+                            <th>Min</th>
+                            <th>Max</th>
+                            <th>Category</th>
+                            <th>Deviation Bar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devTable">
+                        <tr>
+                            <td colspan="8" style="text-align:center;color:#94a3b8">Loading deviation data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer">
+                © 2026 AI Cyber Shield — Deviation Analysis Module
+            </div>
+
+        </section>
+    </div>
+
+    <script>
+        // ----- Role check -----
+        const role = localStorage.getItem('role');
+        if (!role) {
+            alert("Please login first.");
+            window.location.href = '/';
+        }
+
+        // ----- Fetch Deviation Data -----
+        async function loadDeviation() {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/api/deviation-data");
+                if (!response.ok) throw new Error("Failed to fetch deviation data");
+
+                const data = await response.json();
+
+                // Overall stats
+                document.getElementById("totalUsers").textContent = data.overall.total_users_analyzed;
+                document.getElementById("meanDev").textContent = data.overall.mean_deviation;
+                document.getElementById("maxDev").textContent = data.overall.max_deviation;
+
+                // Table
+                const tbody = document.getElementById("devTable");
+                tbody.innerHTML = "";
+
+                if (data.users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#94a3b8">No deviation data available. Users need login activity first.</td></tr>`;
+                    document.getElementById("deviationChart").innerHTML = `<p style="color:#94a3b8;text-align:center;width:100%">No data to chart</p>`;
+                    return;
+                }
+
+                data.users.forEach(u => {
+                    const barWidth = Math.min((u.std_deviation / 50) * 100, 100);
+                    tbody.innerHTML += `
+              <tr>
+                <td>${u.email}</td>
+                <td>${u.total_events}</td>
+                <td>${u.mean_score}</td>
+                <td><strong>${u.std_deviation}</strong></td>
+                <td>${u.min_score}</td>
+                <td>${u.max_score}</td>
+                <td><span class="badge" style="background:${u.risk_color}">${u.risk_category}</span></td>
+                <td>
+                  <div class="dev-bar-container">
+                    <div class="dev-bar" style="width:${barWidth}%;background:${u.risk_color}"></div>
+                  </div>
+                </td>
+              </tr>`;
+                });
+
+                // Bar Chart
+                const chartEl = document.getElementById("deviationChart");
+                chartEl.innerHTML = "";
+                const maxDev = Math.max(...data.users.map(u => u.std_deviation), 1);
+
+                data.users.forEach(u => {
+                    const heightPct = Math.max((u.std_deviation / maxDev) * 100, 5);
+                    const emailShort = u.email.split("@")[0];
+                    chartEl.innerHTML += `
+              <div class="bar-item">
+                <div class="bar-value">${u.std_deviation}</div>
+                <div class="bar" style="height:${heightPct}%;background:${u.risk_color}"></div>
+                <div class="bar-label">${emailShort}</div>
+              </div>`;
+                });
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById("devTable").innerHTML =
+                    `<tr><td colspan="8" style="text-align:center;color:red">Error loading deviation data</td></tr>`;
+            }
+        }
+
+        loadDeviation();
+    </script>
+</body>
+
+</html>

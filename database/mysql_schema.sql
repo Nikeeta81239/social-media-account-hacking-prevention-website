@@ -1,7 +1,7 @@
-CREATE DATABASE ai_social_security;
+CREATE DATABASE IF NOT EXISTS ai_social_security;
 USE ai_social_security;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -9,15 +9,15 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
- 
- CREATE TABLE blocked_users (
+CREATE TABLE IF NOT EXISTS blocked_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     reason VARCHAR(100),
     blocked_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
-CREATE TABLE login_logs (
+
+CREATE TABLE IF NOT EXISTS login_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -29,15 +29,17 @@ CREATE TABLE login_logs (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE attack_logs (
+CREATE TABLE IF NOT EXISTS attack_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
   ip_address VARCHAR(50),
   risk_score INT,
   status VARCHAR(50),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
-CREATE TABLE xai_explanations (
+
+CREATE TABLE IF NOT EXISTS xai_explanations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
   event_type VARCHAR(50),
@@ -46,5 +48,6 @@ CREATE TABLE xai_explanations (
   top_reasons TEXT,
   what_if TEXT,
   trust_score INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );

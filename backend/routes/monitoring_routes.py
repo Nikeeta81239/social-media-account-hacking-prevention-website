@@ -4,7 +4,7 @@ from ai_ml.explainable_ai import generate_xai_explanation
 
 monitoring_bp = Blueprint("monitoring", __name__)
 
-@monitoring_bp.route("/api/xai/latest", methods=["GET"])
+@monitoring_bp.route("/xai/latest", methods=["GET"])
 def get_latest_xai():
     user_id = request.args.get("user_id")
 

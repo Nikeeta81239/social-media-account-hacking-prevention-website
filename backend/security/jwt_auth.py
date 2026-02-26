@@ -24,13 +24,39 @@ def token_required(role=None):
 
             try:
                 data = jwt.decode(token, Config.JWT_SECRET, algorithms=["HS256"])
+                user_id = data["user_id"]
+                
+                # REQUIRMENT: Check if user is currently blocked in DB
+                from database import get_db
+                import datetime
+                db = get_db()
+                cur = db.cursor(dictionary=True)
+                cur.execute("SELECT * FROM blocked_users WHERE user_id=%s ORDER BY blocked_time DESC LIMIT 1", (user_id,))
+                block = cur.fetchone()
+                
+                if block:
+                    diff = (datetime.datetime.now() - block['blocked_time']).total_seconds()
+                    if diff < 30:
+                        cur.close()
+                        db.close()
+                        return jsonify({
+                            "status": "blocked",
+                            "message": f"Access Restricted: {block['reason']}",
+                            "time_left": 30 - int(diff),
+                            "reason": block['reason']
+                        }), 403
+                
+                cur.close()
+                db.close()
+
                 if role and data["role"] != role:
                     return jsonify({"message": "Access denied"}), 403
 
-                return f(data["user_id"], *args, **kwargs)
+                # PASS BOTH user_id and role to the function
+                return f(user_id, data["role"], *args, **kwargs)
 
-            except:
-                return jsonify({"message": "Invalid token"}), 401
+            except Exception as e:
+                return jsonify({"message": f"Invalid token or system error: {str(e)}"}), 401
 
         return wrapper
     return decorator

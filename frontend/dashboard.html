@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Dashboard | AI Cyber Shield</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Cyber Shield user dashboard – real-time login risk monitoring.">
 
     <!-- Fonts -->
     <link
@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-        /* GLOBAL RESET */
         * {
             margin: 0;
             padding: 0;
@@ -30,7 +29,6 @@
             color: #f1f5f9;
         }
 
-        /* CYBER GRID */
         .cyber-grid {
             position: fixed;
             inset: 0;
@@ -67,9 +65,10 @@
 
         .navbar .logo h2 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             background: linear-gradient(90deg, #06b6d4, #22d3ee);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -96,14 +95,6 @@
             border-right: 1px solid rgba(6, 182, 212, .2);
         }
 
-        .sidebar ul {
-            list-style: none;
-        }
-
-        .sidebar li {
-            margin-bottom: 15px;
-        }
-
         .sidebar a {
             display: flex;
             align-items: center;
@@ -113,6 +104,7 @@
             padding: 12px;
             border-radius: 8px;
             transition: .3s;
+            margin-bottom: 5px;
         }
 
         .sidebar a:hover {
@@ -139,10 +131,20 @@
             margin-bottom: 30px;
         }
 
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 600;
+            background: rgba(16, 185, 129, .15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, .3);
+        }
+
         /* CARDS GRID */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -206,12 +208,20 @@
             background: #ef4444;
         }
 
-        /* ACTIVITY TABLE */
+        /* TABLE */
         .table-container {
             background: rgba(15, 23, 42, .8);
             border-radius: 12px;
             border: 1px solid rgba(6, 182, 212, .2);
             overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(6, 182, 212, .15);
+            font-weight: 600;
+            color: #22d3ee;
+            font-size: .95rem;
         }
 
         table {
@@ -221,20 +231,62 @@
 
         th,
         td {
-            padding: 14px 18px;
+            padding: 13px 16px;
             color: #f1f5f9;
-            border-bottom: 1px solid rgba(6, 182, 212, .1);
+            border-bottom: 1px solid rgba(6, 182, 212, .08);
+            font-size: .88rem;
         }
 
         th {
             background: rgba(30, 41, 59, .7);
             text-align: left;
             color: #94a3b8;
-            font-size: .9rem;
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
         }
 
         tr:hover {
             background: rgba(6, 182, 212, .05);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: .72rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, .15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, .3);
+        }
+
+        .badge-suspicious {
+            background: rgba(245, 158, 11, .15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, .3);
+        }
+
+        .badge-blocked {
+            background: rgba(239, 68, 68, .15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: .2s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, .15);
         }
 
         /* FOOTER */
@@ -244,6 +296,143 @@
             font-size: .85rem;
             color: #94a3b8;
         }
+
+        /* XAI MODAL OVERLAY */
+        #xaiOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .xai-modal {
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            box-shadow: 0 0 80px rgba(6, 182, 212, 0.2);
+            position: relative;
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .xai-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .xai-header i {
+            font-size: 3rem;
+            color: #06b6d4;
+            margin-bottom: 15px;
+        }
+
+        .xai-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #22d3ee;
+        }
+
+        .xai-body {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #06b6d4;
+        }
+
+        .xai-body .label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .xai-body .reason {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .xai-score-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .xai-score-box {
+            background: rgba(6, 182, 212, 0.1);
+            padding: 8px 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .xai-score-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        .xai-score-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #22d3ee;
+        }
+
+        .xai-metrics-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .xai-metric-tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .xai-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #06b6d4, #0ea5e9);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .xai-btn:hover {
+            box-shadow: 0 5px 15px rgba(6, 182, 212, 0.4);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 
@@ -251,24 +440,55 @@
 
     <div class="cyber-grid"></div>
 
+    <!-- XAI Security Summary Overlay -->
+    <div id="xaiOverlay">
+        <div class="xai-modal">
+            <div class="xai-header">
+                <i class="fas fa-brain"></i>
+                <h2>Security Explained</h2>
+                <p>Transparent AI Decision Analysis</p>
+            </div>
+            <div class="xai-body">
+                <div class="label">Behavioral Analysis Summary</div>
+                <div id="modalReason" class="reason">Processing security narrative...</div>
+
+                <div class="xai-score-row">
+                    <div class="xai-score-box">
+                        <span class="xai-score-label">Risk Score</span>
+                        <span id="modalRiskScore" class="xai-score-value">0%</span>
+                    </div>
+                    <div class="xai-score-box">
+                        <span class="xai-score-label">Trust Score</span>
+                        <span id="modalTrustScore" class="xai-score-value">0%</span>
+                    </div>
+                    <div style="flex: 1; font-size: 0.85rem; color: #94a3b8;">
+                        Our Explainable AI (XAI) engine analyzed your behavioral parameters to ensure account safety.
+                    </div>
+                </div>
+
+                <div id="modalMetrics" class="xai-metrics-row"></div>
+            </div>
+            <button class="xai-btn" onclick="closeXaiModal()">I Understand & Continue</button>
+        </div>
+    </div>
+
     <nav class="navbar">
         <div class="logo">
             <i class="fas fa-shield-halved"></i>
-            <h2>AI Based Social Media Account Hacking Prevention</h2>
+            <h2>AI Cyber Shield</h2>
         </div>
-        <i class="fas fa-bell"></i>
+        <i class="fas fa-bell" title="Notifications"></i>
     </nav>
 
     <div class="main-container">
 
-
         <aside class="sidebar">
             <a href="/dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
             <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
-            <a href="/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
+            <a href="/admin-dashboard" class="admin-only"><i class="fas fa-user-lock"></i> Admin Panel</a>
             <a href="/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
-            <a href="/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
-            <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation</a>
+            <a href="/admin-blocked" class="admin-only"><i class="fas fa-ban"></i> Blocked Accounts</a>
+            <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation Analysis</a>
             <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
         </aside>
 
@@ -290,7 +510,7 @@
 
                 <div class="card">
                     <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
-                    <div class="card-title">New Locations</div>
+                    <div class="card-title">Login Locations</div>
                     <div class="card-value" id="newLocations">--</div>
                 </div>
 
@@ -313,6 +533,7 @@
 
             <!-- RECENT LOGIN ACTIVITY -->
             <div class="table-container">
+                <div class="table-header"><i class="fas fa-clock-rotate-left"></i> &nbsp;Recent Login Activity</div>
                 <table>
                     <thead>
                         <tr>
@@ -321,11 +542,12 @@
                             <th>Location</th>
                             <th>Device</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="recentLogins">
                         <tr>
-                            <td colspan="5" style="text-align:center;color:#94a3b8">Loading...</td>
+                            <td colspan="6" style="text-align:center;color:#94a3b8">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -341,46 +563,173 @@
 
     <script>
 
+        // ── Auth Guard ──
+        const savedRole = localStorage.getItem("role");
+        if (!savedRole) {
+            window.location.href = "/";
+        }
+
+        // Hide admin-only links if not admin
+        if (savedRole !== "admin") {
+            document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+        }
+
         function logout() {
             localStorage.clear();
             window.location.href = "/";
         }
-        /* ===== FETCH USER DASHBOARD DATA (BACKEND READY) ===== */
-        async function fetchDashboard() {
-            const userId = localStorage.getItem("user_id");
-            try {
-                const response = await fetch(`/api/dashboard-data?user_id=${userId}`);
-                const data = await response.json();
 
-                document.getElementById("trustedDevices").textContent = data.trustedDevices;
-                document.getElementById("newLocations").textContent = data.newLocations;
-                document.getElementById("profileTrust").textContent = (data.profileTrustScore || 0) + "%";
+        // ── Delete a single login log ──
+        async function deleteLog(logId) {
+            if (!confirm("Delete this login record?")) return;
+            try {
+                const res = await fetch("/api/delete-log", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": localStorage.getItem("token")
+                    },
+                    body: JSON.stringify({ log_id: logId })
+                });
+                if (res.ok) fetchDashboard();
+                else if (res.status === 401 || res.status === 403) window.location.href = "/";
+            } catch (err) {
+                console.error("Delete error:", err);
+            }
+        }
+
+        // ── Status badge helper ──
+        function statusBadgeClass(status) {
+            const s = (status || "").toLowerCase();
+            if (s === "success") return "badge-success";
+            if (s === "suspicious") return "badge-suspicious";
+            if (s === "otp_pending" || s === "otp_pending_fail") return "badge-suspicious";
+            if (s === "blocked") return "badge-blocked";
+            return "badge-suspicious"; // default amber
+        }
+
+        // ── Main dashboard fetch ──
+        // ── XAI Modal Logic ──
+        function checkXaiOnLogin() {
+            const xaiDataString = sessionStorage.getItem("login_xai");
+            if (xaiDataString) {
+                const xai = JSON.parse(xaiDataString);
+                document.getElementById("modalReason").textContent = xai.reason || "Login patterns were analyzed and verified.";
+                document.getElementById("modalRiskScore").textContent = (xai.risk_score || 0) + "%";
+                document.getElementById("modalTrustScore").textContent = (xai.trust_score || 100) + "%";
+
+                const metricsDiv = document.getElementById("modalMetrics");
+                metricsDiv.innerHTML = "";
+                if (xai.dynamic_analysis) {
+                    xai.dynamic_analysis.forEach(m => {
+                        const tag = document.createElement("span");
+                        tag.className = "xai-metric-tag";
+                        tag.innerHTML = `<i class="fas fa-check-circle" style="color:#06b6d4"></i> ${m}`;
+                        metricsDiv.appendChild(tag);
+                    });
+                }
+
+                document.getElementById("xaiOverlay").style.display = "flex";
+            }
+        }
+
+        function closeXaiModal() {
+            document.getElementById("xaiOverlay").style.display = "none";
+            // Important: Remove from session so it doesn't pop up on every dashboard refresh
+            sessionStorage.removeItem("login_xai");
+        }
+
+        async function fetchDashboard() {
+            // Check for XAI on start
+            checkXaiOnLogin();
+            const userId = localStorage.getItem("user_id");
+            console.log("[Dashboard] user_id from localStorage:", userId);
+
+            if (!userId || userId === "null" || userId === "undefined") {
+                document.getElementById("recentLogins").innerHTML =
+                    `<tr><td colspan="6" style="text-align:center;color:#f59e0b">
+                        ⚠ User ID not found. Please <a href="/" style="color:#06b6d4">login again</a>.
+                    </td></tr>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/dashboard-data`, {
+                    headers: { "Authorization": localStorage.getItem("token") }
+                });
+                if (!response.ok) {
+                    const errData = await response.json();
+                    if (response.status === 403 && errData.status === "blocked") {
+                        sessionStorage.setItem("block_info", JSON.stringify(errData));
+                        window.location.href = "/blocked-account";
+                        return;
+                    }
+                    if (response.status === 401 || response.status === 403) window.location.href = "/";
+                    throw new Error("API error " + response.status);
+                }
+                const data = await response.json();
+                console.log("[Dashboard] API response:", data);
+
+                // ── Stat cards ──
+                document.getElementById("trustedDevices").textContent = data.trustedDevices ?? "--";
+                document.getElementById("newLocations").textContent = data.newLocations ?? "--";
+                document.getElementById("profileTrust").textContent = (data.profileTrustScore ?? 100) + "%";
 
                 const pBadge = document.getElementById("profileBadge");
                 pBadge.textContent = data.isFake ? "Suspicious Profile" : "Genuine Profile";
                 pBadge.style.color = data.isFake ? "#ef4444" : "#10b981";
 
-                // Risk
-                document.getElementById("currentRiskVal").textContent = data.riskLevel + "%";
+                // ── Risk bar ──
+                const riskVal = data.riskLevel ?? 0;
+                document.getElementById("currentRiskVal").textContent = riskVal + "%";
                 const bar = document.getElementById("riskBar");
-                bar.style.width = data.riskLevel + "%";
-                if (data.riskLevel < 30) { bar.className = "risk-fill low"; }
-                else if (data.riskLevel < 70) { bar.className = "risk-fill medium"; }
-                else { bar.className = "risk-fill high"; }
+                bar.style.width = riskVal + "%";
+                bar.className = "risk-fill " + (riskVal < 30 ? "low" : riskVal < 70 ? "medium" : "high");
 
-                // Logs
+                // ── Status badge ──
+                const badge = document.getElementById("statusBadge");
+                if (riskVal > 60) {
+                    badge.textContent = "⚠ High Risk";
+                    badge.style.cssText = "background:rgba(239,68,68,.15);color:#ef4444;border-color:rgba(239,68,68,.3)";
+                } else {
+                    badge.textContent = "✔ Secure";
+                    badge.style.cssText = "background:rgba(16,185,129,.15);color:#10b981;border-color:rgba(16,185,129,.3)";
+                }
+
+                // ── Recent login table ──
                 const tbody = document.getElementById("recentLogins");
                 tbody.innerHTML = "";
+
+                if (!data.recent || data.recent.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:22px">
+                        <i class="fas fa-inbox" style="font-size:1.4rem;margin-bottom:8px;display:block"></i>
+                        No login records found for this account yet.
+                    </td></tr>`;
+                    return;
+                }
+
                 data.recent.forEach(r => {
+                    const cls = statusBadgeClass(r.status);
+                    const displayStatus = (r.status || "unknown").replace("_", " ");
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `<td>${r.time}</td><td>${r.ip}</td><td>${r.loc}</td><td>${r.dev}</td><td>${r.status}</td>`;
+                    tr.innerHTML = `
+                        <td style="white-space:nowrap">${r.time || '—'}</td>
+                        <td><code style="color:#06b6d4;font-size:.82rem">${r.ip || '—'}</code></td>
+                        <td><i class="fas fa-map-marker-alt" style="color:#94a3b8;margin-right:4px;font-size:.8rem"></i>${r.loc || '—'}</td>
+                        <td><i class="fas fa-laptop" style="color:#94a3b8;margin-right:4px;font-size:.8rem"></i>${r.dev || '—'}</td>
+                        <td><span class="badge ${cls}">${displayStatus}</span></td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteLog(${r.log_id})" title="Delete record">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>`;
                     tbody.appendChild(tr);
                 });
 
-                // Status Badge
-                document.getElementById("statusBadge").textContent = data.riskLevel > 60 ? "High Risk" : "Low Risk";
             } catch (err) {
-                console.error(err);
+                console.error("[Dashboard] Fetch error:", err);
+                document.getElementById("recentLogins").innerHTML =
+                    `<tr><td colspan="6" style="text-align:center;color:red">Error loading data — check backend connection.</td></tr>`;
             }
         }
 

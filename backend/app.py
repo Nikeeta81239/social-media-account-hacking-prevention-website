@@ -135,6 +135,10 @@ def activity_logs():
 def admin_dashboard():
     return render_template("admin-dashboard.html")
 
+@app.route("/admin-blocked")
+def admin_blocked_page():
+    return render_template("admin-blocked-users.html")
+
 @app.route("/blocked-account")
 def blocked_accounts():
     return render_template("blocked-account.html")
@@ -147,8 +151,13 @@ def xai():
 def deviation():
     return render_template("deviation.html")
 
+@app.route("/security-recovery")
+def security_recovery():
+    return render_template("security-recovery.html")
+
 # -----------------------------------
 
 if __name__ == "__main__":
     init_database()
-    app.run(debug=True)
+    # Using port 8080 as port 5000 is sometimes restricted by browsers or system services
+    app.run(host='0.0.0.0', port=8080, debug=True)

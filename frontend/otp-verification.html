@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <title>OTP Verification | AI Cyber Shield</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
@@ -24,140 +27,411 @@
             color: #f1f5f9;
         }
 
+        .cyber-grid {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(6, 182, 212, .02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, .02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+        }
+
+        /* ── OTP Card ── */
         .otp-container {
-            background: rgba(15, 23, 42, .9);
+            background: rgba(15, 23, 42, .95);
             border: 1px solid rgba(245, 158, 11, .4);
             border-radius: 20px;
-            padding: 40px;
-            max-width: 450px;
+            padding: 44px 40px;
+            max-width: 460px;
             width: 100%;
-            box-shadow: 0 0 60px rgba(245, 158, 11, .15);
+            box-shadow: 0 0 60px rgba(245, 158, 11, .12);
+            animation: slideUp .45s ease;
         }
 
-        .header {
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .card-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
-        .header i {
+        .card-header i {
             font-size: 3rem;
             color: #f59e0b;
         }
 
-        .header h1 {
+        .card-header h1 {
             font-family: 'Orbitron', sans-serif;
             margin-top: 10px;
             background: linear-gradient(90deg, #f59e0b, #fde047);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
         }
 
-        .warning {
-            background: rgba(245, 158, 11, .15);
+        .card-header p {
+            color: #94a3b8;
+            font-size: .88rem;
+            margin-top: 6px;
+        }
+
+        .info-bar {
+            background: rgba(245, 158, 11, .1);
             border-left: 4px solid #f59e0b;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: .9rem;
+            padding: 13px 16px;
+            border-radius: 8px 10px 10px 8px;
+            font-size: .86rem;
             color: #fde68a;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
-        .otp-box {
+        .timer-row {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 25px;
+            align-items: center;
+            font-size: .85rem;
+            color: #94a3b8;
+            margin-bottom: 18px;
         }
 
-        .otp-box input {
-            width: 60px;
-            height: 65px;
+        #timer {
+            color: #f59e0b;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* OTP boxes */
+        .otp-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .otp-boxes input {
+            width: 52px;
+            height: 52px;
             text-align: center;
-            font-size: 1.8rem;
-            border-radius: 12px;
-            border: 2px solid rgba(245, 158, 11, .4);
-            background: #020617;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-radius: 10px;
+            border: 2px solid rgba(245, 158, 11, .35);
+            background: rgba(0, 0, 0, .4);
             color: #f1f5f9;
+            transition: border-color .2s, box-shadow .2s;
         }
 
-        .otp-box input:focus {
+        .otp-boxes input:focus {
             outline: none;
             border-color: #facc15;
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 10px rgba(245, 158, 11, .25);
         }
 
-        button {
+        /* Submit button */
+        #submitBtn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(90deg, #f59e0b, #facc15);
             border: none;
             border-radius: 12px;
             color: #020617;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.05rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.3s;
+            transition: .2s;
         }
 
-        button:hover {
+        #submitBtn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, .35);
         }
 
-        .timer {
+        #submitBtn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Message inline */
+        #msgBox {
+            padding: 13px 15px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: .87rem;
+            font-weight: 500;
+            display: none;
+            animation: fadeIn .3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .back-link {
+            display: block;
             text-align: center;
-            margin-bottom: 15px;
-            color: #fde68a;
+            margin-top: 18px;
+            color: #94a3b8;
+            font-size: .85rem;
+        }
+
+        .back-link a {
+            color: #06b6d4;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── BLOCKED SCREEN (replaces OTP card when blocked) ── */
+        .blocked-screen {
+            display: none;
+            background: rgba(15, 23, 42, .95);
+            border: 1px solid rgba(239, 68, 68, .45);
+            border-radius: 20px;
+            padding: 44px 40px;
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(239, 68, 68, .15);
+            animation: slideUp .45s ease;
+        }
+
+        .blocked-screen i {
+            font-size: 4rem;
+            color: #ef4444;
+            margin-bottom: 16px;
+        }
+
+        .blocked-screen h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ef4444;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .blocked-screen p {
+            color: #94a3b8;
+            font-size: .9rem;
+            margin-bottom: 20px;
+        }
+
+        .btn-home {
+            display: inline-block;
+            padding: 12px 28px;
+            background: rgba(239, 68, 68, .15);
+            border: 1px solid rgba(239, 68, 68, .4);
+            color: #fca5a5;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: .9rem;
+            transition: .2s;
+        }
+
+        .btn-home:hover {
+            background: rgba(239, 68, 68, .28);
         }
     </style>
 </head>
 
 <body>
-    <div class="otp-container">
-        <div class="header">
-            <i class="fas fa-shield-alt"></i>
+    <div class="cyber-grid"></div>
+
+    <!-- ── BLOCKED screen (shown if account is blocked) ── -->
+    <div class="blocked-screen" id="blockedScreen">
+        <i class="fas fa-ban"></i>
+        <h2>Account Blocked</h2>
+        <p id="blockedMsg">Your account has been blocked due to too many failed attempts.<br>Please contact the
+            administrator to restore access.</p>
+        <a href="/" class="btn-home"><i class="fas fa-house"></i> &nbsp;Back to Login</a>
+    </div>
+
+    <!-- ── OTP card (shown normally) ── -->
+    <div class="otp-container" id="otpCard">
+
+        <div class="card-header">
+            <i class="fas fa-shield-halved"></i>
             <h1>OTP Verification</h1>
+            <p>Enter the 4-digit code sent to your registered email</p>
         </div>
 
-        <div class="warning">
-            OTP has been sent to your registered Gmail
+        <div class="info-bar">
+            <i class="fas fa-envelope"></i> &nbsp;OTP has been sent to your registered Gmail address.
         </div>
 
-        <div class="timer">
-            OTP expires in <span id="timer">02:00</span>
+        <div class="timer-row">
+            <span>Code expires in</span>
+            <span id="timer">02:00</span>
         </div>
+
+        <!-- Adaptive Authentication Transparency (XAI) -->
+        <div id="xaiBanner"
+            style="display: none; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); padding: 15px; border-radius: 12px; margin-bottom: 18px;">
+            <div
+                style="font-size: 0.75rem; text-transform: uppercase; color: #22d3ee; margin-bottom: 5px; font-weight: 700;">
+                <i class="fas fa-brain"></i> Adaptive Authentication Insight
+            </div>
+            <p id="xaiReasonText" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;"></p>
+        </div>
+
+        <!-- Inline message -->
+        <div id="msgBox"></div>
 
         <form id="otpForm">
-            <div class="otp-box">
-                <input type="text" maxlength="1" class="otp-input" autofocus>
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
+            <div class="otp-boxes">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric" autofocus>
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
             </div>
-            <button type="submit">Verify OTP</button>
+            <button type="submit" id="submitBtn">
+                <i class="fas fa-check-circle"></i> &nbsp;Verify OTP
+            </button>
         </form>
+
+        <div class="back-link">
+            Didn't receive code? &nbsp;<a href="#" id="resendBtn" onclick="resendOTP(event)">Resend OTP</a>
+            <div style="margin-top:12px;">
+                Wrong account? &nbsp;<a href="/">← Back to Login</a>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Initial Check: Prevents direct access
-        if (!localStorage.getItem("user_id")) {
-            alert("Please login first.");
+        // ── Resend OTP ──
+        async function resendOTP(e) {
+            e.preventDefault();
+            const resendBtn = document.getElementById("resendBtn");
+            const oldHtml = resendBtn.innerHTML;
+            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            resendBtn.style.pointerEvents = "none";
+
+            try {
+                const res = await fetch("/api/resend-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showMsg("success", "✔ New OTP sent to your email!");
+                    // Reset timer to 120s
+                    time = 120;
+                } else {
+                    showMsg("error", data.message || "Failed to resend OTP.");
+                }
+            } catch (err) {
+                showMsg("error", "Network error. Try again.");
+            } finally {
+                resendBtn.innerHTML = oldHtml;
+                resendBtn.style.pointerEvents = "auto";
+            }
+        }
+        // ── Redirect guard ──
+        const userId = localStorage.getItem("user_id");
+        if (!userId) {
             window.location.href = "/";
         }
 
-        // Auto focus flow
+        // ── load XAI Info ──
+        function loadXaiInfo() {
+            const xaiDataString = sessionStorage.getItem("login_xai");
+            if (xaiDataString) {
+                const xai = JSON.parse(xaiDataString);
+                const banner = document.getElementById("xaiBanner");
+                const text = document.getElementById("xaiReasonText");
+                if (xai.reason || xai.suggested_action) {
+                    banner.style.display = "block";
+                    text.textContent = xai.reason || xai.suggested_action;
+                }
+            }
+        }
+        loadXaiInfo();
+
+        // ── Inline message helper ──
+        function showMsg(type, html) {
+            const box = document.getElementById("msgBox");
+            box.style.display = "block";
+            const s = {
+                error: { bg: "rgba(239,68,68,.12)", bdr: "rgba(239,68,68,.4)", color: "#fca5a5", icon: "fa-circle-exclamation" },
+                success: { bg: "rgba(16,185,129,.12)", bdr: "rgba(16,185,129,.4)", color: "#6ee7b7", icon: "fa-check-circle" },
+                info: { bg: "rgba(245,158,11,.12)", bdr: "rgba(245,158,11,.4)", color: "#fde68a", icon: "fa-info-circle" }
+            }[type] || { bg: "rgba(239,68,68,.12)", bdr: "rgba(239,68,68,.4)", color: "#fca5a5", icon: "fa-circle-exclamation" };
+            box.style.background = s.bg;
+            box.style.border = `1px solid ${s.bdr}`;
+            box.style.color = s.color;
+            box.innerHTML = `<i class="fas ${s.icon}"></i> &nbsp;${html}`;
+        }
+
+        // ── Show blocked screen instead of OTP form ──
+        function showBlockedScreen(msg) {
+            document.getElementById("otpCard").style.display = "none";
+            const bs = document.getElementById("blockedScreen");
+            bs.style.display = "block";
+            if (msg) document.getElementById("blockedMsg").textContent = msg;
+        }
+
+        // ── On page load: check if this account is already blocked ──
+        async function checkBlocked() {
+            try {
+                // We verify a dummy OTP to let the backend check the blocked status
+                // A cleaner approach: call verify-otp with empty OTP; backend checks blocked first
+                const res = await fetch("/api/verify-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: userId, otp: "__blocked_check__" })
+                });
+                const data = await res.json();
+                if (res.status === 403 || data.blocked === true) {
+                    showBlockedScreen(data.message);
+                }
+            } catch (e) {
+                // Network error — silently continue; real block check happens on submit
+            }
+        }
+
+        checkBlocked();
+
+        // ── Auto-focus flow ──
         const inputs = document.querySelectorAll(".otp-input");
         inputs.forEach((input, i) => {
             input.addEventListener("input", () => {
+                input.value = input.value.replace(/\D/g, "");
                 if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
             });
             input.addEventListener("keydown", (e) => {
                 if (e.key === "Backspace" && !input.value && i > 0) inputs[i - 1].focus();
             });
+            input.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "");
+                [...pasted.slice(0, 4)].forEach((ch, j) => {
+                    if (inputs[j]) { inputs[j].value = ch; inputs[j].focus(); }
+                });
+            });
         });
 
-        // Timer
+        // ── Countdown timer ──
         let time = 120;
         const timerEl = document.getElementById("timer");
         const countdown = setInterval(() => {
@@ -166,40 +440,77 @@
             timerEl.textContent = `${m}:${s}`;
             if (time-- <= 0) {
                 clearInterval(countdown);
-                alert("OTP expired. Please login again.");
-                window.location.href = "/";
+                timerEl.textContent = "Expired";
+                timerEl.style.color = "#ef4444";
+                showMsg("error", "⏰ OTP has expired. Please go back and login again.");
+                document.getElementById("submitBtn").disabled = true;
             }
         }, 1000);
 
-        // Verify OTP
-        document.getElementById("otpForm").addEventListener("submit", async e => {
+        // ── OTP Submit ──
+        document.getElementById("otpForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+
             let otp = "";
             inputs.forEach(i => otp += i.value);
 
-            const user_id = localStorage.getItem("user_id");
+            if (otp.length < 4) {
+                showMsg("error", "Please enter all 4 digits.");
+                return;
+            }
+
+            const btn = document.getElementById("submitBtn");
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
 
             try {
                 const res = await fetch("/api/verify-otp", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user_id, otp })
+                    body: JSON.stringify({ user_id: userId, otp })
                 });
 
                 const data = await res.json();
+
+                // ── 🔴 BLOCKED — show blocked screen, never allow through ──
+                if (res.status === 403 || data.blocked === true) {
+                    clearInterval(countdown);
+                    showBlockedScreen(data.message);
+                    return;
+                }
+
                 if (data.verified) {
                     localStorage.setItem("token", data.token);
                     localStorage.setItem("role", data.role);
-                    alert("Verification Successful!");
-                    window.location.href = data.role === "admin" ? "/admin-dashboard" : "/dashboard";
+                    localStorage.setItem("user_id", data.user_id);
+                    if (data.xai) {
+                        sessionStorage.setItem("login_xai", JSON.stringify(data.xai));
+                    }
+                    clearInterval(countdown);
+                    showMsg("success", "✔ Identity Verified. Redirecting to security briefing...");
+
+                    const isHighRisk = data.xai && data.xai.risk_score >= 70;
+
+                    setTimeout(() => {
+                        if (isHighRisk) {
+                            window.location.href = "/xai";
+                        } else {
+                            window.location.href = data.role === "admin" ? "/admin-dashboard" : "/dashboard";
+                        }
+                    }, 1200);
                 } else {
-                    alert(data.message || "Incorrect OTP");
+                    showMsg("error", data.message || "Incorrect OTP. Please try again.");
                     inputs.forEach(i => i.value = "");
                     inputs[0].focus();
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> &nbsp;Verify OTP';
                 }
+
             } catch (err) {
                 console.error(err);
-                alert("Verification failed. Try again.");
+                showMsg("error", "Server error. Please try again.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> &nbsp;Verify OTP';
             }
         });
     </script>

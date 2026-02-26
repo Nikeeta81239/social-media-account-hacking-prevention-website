@@ -23,6 +23,9 @@ def generate_otp(user_id):
 
 def verify_otp(user_id, entered_otp):
     uid = str(user_id)
+    # Ensure entered_otp is treated as a string and stripped of whitespace
+    clean_otp = str(entered_otp).strip()
+    
     data = otp_store.get(uid)
 
     if not data:
@@ -33,7 +36,9 @@ def verify_otp(user_id, entered_otp):
         otp_store.pop(uid)
         return False, "OTP expired"
 
-    if data["otp"] != entered_otp:
+    print(f"[DEBUG] Verifying OTP for User {uid}: Expected='{data['otp']}', Entered='{clean_otp}'")
+
+    if data["otp"] != clean_otp:
         return False, "Invalid OTP"
 
     otp_store.pop(uid)

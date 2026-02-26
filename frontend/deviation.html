@@ -5,12 +5,14 @@
     <meta charset="UTF-8">
     <title>Deviation Analysis | AI Cyber Shield</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Cyber Shield — Statistical deviation analysis of login risk scores.">
 
-    <!-- Fonts & Icons -->
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
         * {
@@ -56,6 +58,7 @@
             font-family: 'Orbitron', sans-serif;
             background: linear-gradient(90deg, #06b6d4, #22d3ee);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -69,6 +72,24 @@
             background: rgba(15, 23, 42, .8);
             padding: 25px;
             border-right: 1px solid rgba(6, 182, 212, .2);
+            min-height: calc(100vh - 65px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid rgba(6, 182, 212, 0.1);
+        }
+
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #10b981;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .sidebar a {
@@ -76,10 +97,11 @@
             gap: 10px;
             align-items: center;
             padding: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #94a3b8;
             text-decoration: none;
             border-radius: 8px;
+            transition: .2s;
         }
 
         .sidebar a:hover,
@@ -91,53 +113,294 @@
         /* CONTENT */
         .content {
             padding: 30px;
+            overflow-y: auto;
         }
 
-        .header {
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        /* STATS CARDS */
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        /* ── SYSTEM RISK BANNER ── */
+        .risk-banner {
+            background: rgba(15, 23, 42, .85);
+            border: 1px solid rgba(6, 182, 212, .25);
+            border-radius: 14px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .risk-banner .banner-title {
+            font-family: 'Orbitron', sans-serif;
+            color: #22d3ee;
+            font-size: .95rem;
+            white-space: nowrap;
+        }
+
+        .risk-banner .banner-chips {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: .82rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip-low {
+            background: rgba(16, 185, 129, .15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, .3);
+        }
+
+        .chip-medium {
+            background: rgba(245, 158, 11, .15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, .3);
+        }
+
+        .chip-high {
+            background: rgba(239, 68, 68, .15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        /* ── STAT CARDS ── */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .stat-card {
             background: rgba(15, 23, 42, .8);
             border: 1px solid rgba(6, 182, 212, .2);
             border-radius: 12px;
-            padding: 20px;
+            padding: 18px;
             text-align: center;
+            transition: .3s;
+        }
+
+        .stat-card:hover {
+            border-color: #06b6d4;
+            transform: translateY(-3px);
         }
 
         .stat-card i {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #06b6d4;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .stat-card h3 {
-            font-size: 2rem;
+            font-size: 1.7rem;
         }
 
         .stat-card p {
             color: #94a3b8;
+            font-size: .82rem;
+            margin-top: 4px;
+        }
+
+        /* ── FORMULA BOX ── */
+        .formula-box {
+            background: rgba(6, 182, 212, .04);
+            border: 1px solid rgba(6, 182, 212, .25);
+            border-left: 4px solid #06b6d4;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+
+        .formula-box h3 {
+            color: #22d3ee;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .formula-main {
+            font-family: 'Courier New', monospace;
+            font-size: 1.15rem;
+            color: #f1f5f9;
+            text-align: center;
+            background: rgba(0, 0, 0, .3);
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            letter-spacing: .03em;
+        }
+
+        .formula-legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .formula-legend span {
+            font-size: .82rem;
+            color: #94a3b8;
+        }
+
+        .formula-legend span strong {
+            color: #22d3ee;
+        }
+
+        /* ── TWO-COL SECTION ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media(max-width:900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── PANEL CARD ── */
+        .panel {
+            background: rgba(15, 23, 42, .8);
+            border: 1px solid rgba(6, 182, 212, .2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .panel h3 {
+            color: #22d3ee;
+            font-size: .95rem;
+            margin-bottom: 14px;
+        }
+
+        /* ── COMPARISON PANEL ── */
+        .cmp-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(6, 182, 212, .08);
+            font-size: .88rem;
+        }
+
+        .cmp-row:last-child {
+            border-bottom: none;
+        }
+
+        .cmp-label {
+            color: #94a3b8;
+        }
+
+        .cmp-value {
+            font-weight: 600;
+        }
+
+        /* ── FEATURE BREAKDOWN ── */
+        .feat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(6, 182, 212, .08);
+            font-size: .85rem;
+        }
+
+        .feat-item:last-child {
+            border-bottom: none;
+        }
+
+        .feat-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #f1f5f9;
+        }
+
+        .feat-score {
+            font-weight: 700;
             font-size: .9rem;
         }
 
-        /* TABLE */
+        .feat-bar-wrap {
+            flex: 1;
+            margin: 0 14px;
+        }
+
+        .feat-bar-bg {
+            height: 6px;
+            background: rgba(30, 41, 59, .8);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .feat-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        .user-select {
+            width: 100%;
+            padding: 9px 12px;
+            margin-bottom: 14px;
+            background: #020617;
+            border: 1px solid rgba(6, 182, 212, .3);
+            color: #f1f5f9;
+            border-radius: 8px;
+            font-size: .9rem;
+        }
+
+        /* ── CHARTS ── */
+        .chart-box {
+            background: rgba(15, 23, 42, .8);
+            border: 1px solid rgba(6, 182, 212, .2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-box h3 {
+            color: #22d3ee;
+            margin-bottom: 16px;
+            font-size: .95rem;
+        }
+
+        canvas {
+            max-height: 260px;
+        }
+
+        /* ── TABLE ── */
         .table-box {
             background: rgba(15, 23, 42, .8);
             border-radius: 12px;
             border: 1px solid rgba(6, 182, 212, .2);
             overflow: hidden;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
+        }
+
+        .table-title {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(6, 182, 212, .15);
+            font-weight: 600;
+            color: #22d3ee;
+            font-size: .95rem;
         }
 
         table {
@@ -147,105 +410,114 @@
 
         th,
         td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(6, 182, 212, .1);
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(6, 182, 212, .08);
+            font-size: .84rem;
         }
 
         th {
             background: rgba(30, 41, 59, .7);
             color: #94a3b8;
+            text-transform: uppercase;
+            font-size: .72rem;
+            letter-spacing: .04em;
             text-align: left;
         }
 
         tr:hover {
-            background: rgba(6, 182, 212, .05);
+            background: rgba(6, 182, 212, .04);
         }
 
-        /* BADGES */
+        /* ── BADGES ── */
         .badge {
-            display: inline-block;
-            padding: 5px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: .75rem;
-            font-weight: 600;
-            color: #fff;
+            font-size: .72rem;
+            font-weight: 700;
         }
 
-        /* BAR */
-        .dev-bar-container {
+        .badge-low {
+            background: rgba(16, 185, 129, .15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, .3);
+        }
+
+        .badge-medium {
+            background: rgba(245, 158, 11, .15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, .3);
+        }
+
+        .badge-high {
+            background: rgba(239, 68, 68, .15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .badge-stable {
+            background: rgba(6, 182, 212, .12);
+            color: #22d3ee;
+            border: 1px solid rgba(6, 182, 212, .25);
+        }
+
+        /* ── DEV BAR ── */
+        .dev-bar-bg {
             background: rgba(30, 41, 59, .7);
             border-radius: 4px;
-            height: 10px;
-            width: 100%;
+            height: 8px;
             overflow: hidden;
         }
 
         .dev-bar {
             height: 100%;
             border-radius: 4px;
-            transition: width 1.5s ease-out;
+            transition: width 1.2s ease;
         }
 
-        /* CHART */
-        .chart-box {
-            background: rgba(15, 23, 42, .8);
-            border: 1px solid rgba(6, 182, 212, .2);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
+        /* ── DELETE BTN ── */
+        .btn-del {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: .2s;
         }
 
-        .chart-box h3 {
-            margin-bottom: 15px;
-            color: #22d3ee;
+        .btn-del:hover {
+            background: rgba(239, 68, 68, .15);
         }
 
-        .bar-chart {
+        /* ── INLINE BAR CHART (custom) ── */
+        .mini-bar-chart {
             display: flex;
             align-items: flex-end;
-            gap: 8px;
-            height: 200px;
-            padding: 10px 0;
+            gap: 5px;
+            height: 60px;
+            padding: 4px 0;
         }
 
-        .bar-item {
+        .mini-bar-item {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
-            height: 100%;
         }
 
-        .bar {
+        .mini-bar {
             width: 100%;
-            max-width: 60px;
-            border-radius: 6px 6px 0 0;
-            transition: height 1s ease-out;
-            position: relative;
-        }
-
-        .bar-label {
-            font-size: .65rem;
-            color: #94a3b8;
-            margin-top: 6px;
-            text-align: center;
-            word-break: break-all;
-            max-width: 80px;
-        }
-
-        .bar-value {
-            font-size: .7rem;
-            color: #f1f5f9;
-            margin-bottom: 4px;
-            font-weight: 600;
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height .8s ease;
         }
 
         .footer {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 20px;
             color: #94a3b8;
-            font-size: .85rem;
+            font-size: .83rem;
         }
     </style>
 </head>
@@ -258,29 +530,44 @@
             <i class="fas fa-shield-halved"></i>
             <h2>AI Cyber Shield</h2>
         </div>
-        <span>Deviation Module</span>
+        <span style="color:#94a3b8;font-size:.9rem;">Deviation Module</span>
     </nav>
 
     <div class="main">
-
         <aside class="sidebar">
-            <a href="http://127.0.0.1:5000/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
-            <a href="http://127.0.0.1:5000/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
-            <a href="http://127.0.0.1:5000/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
-            <a href="http://127.0.0.1:5000/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
-            <a href="http://127.0.0.1:5000/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
-            <a href="http://127.0.0.1:5000/deviation" class="active"><i class="fas fa-chart-bar"></i> Deviation</a>
-            <a href="http://127.0.0.1:5000/"><i class="fas fa-right-from-bracket"></i> Logout</a>
+            <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
+            <a href="/admin-dashboard" class="admin-only"><i class="fas fa-user-lock"></i> Admin Panel</a>
+            <a href="/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
+            <a href="/admin-blocked" class="admin-only"><i class="fas fa-ban"></i> Blocked Accounts</a>
+            <a href="/deviation" class="active"><i class="fas fa-chart-bar"></i> Deviation Analysis</a>
+            <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+            <div class="sidebar-footer">
+                <div class="verified-badge">
+                    <i class="fas fa-check-circle"></i> Verified Security
+                </div>
+            </div>
         </aside>
 
         <section class="content">
 
-            <div class="header">
-                <h1>Risk Score Deviation Analysis</h1>
-                <span>Standard deviation of login risk scores</span>
+            <div class="page-header">
+                <h1><i class="fas fa-wave-square" style="color:#06b6d4"></i> &nbsp;Risk Score Deviation Analysis</h1>
+                <span style="color:#94a3b8;font-size:.85rem;">Standard deviation of login risk scores per user</span>
             </div>
 
-            <!-- OVERALL STATS -->
+            <!-- ① SYSTEM RISK BANNER -->
+            <div class="risk-banner">
+                <div class="banner-title">🛡 System Security Status</div>
+                <div class="banner-chips">
+                    <span class="chip chip-low" id="chipLow">🟢 — Stable Users</span>
+                    <span class="chip chip-medium" id="chipMed">🟡 — Medium Risk</span>
+                    <span class="chip chip-high" id="chipHigh">🔴 — High Risk</span>
+                </div>
+                <div style="margin-left:auto;font-size:.82rem;color:#94a3b8;" id="lastRefresh"></div>
+            </div>
+
+            <!-- ② STAT CARDS -->
             <div class="stats">
                 <div class="stat-card">
                     <i class="fas fa-users"></i>
@@ -290,7 +577,7 @@
                 <div class="stat-card">
                     <i class="fas fa-chart-line"></i>
                     <h3 id="meanDev">--</h3>
-                    <p>Mean Deviation</p>
+                    <p>Mean Deviation (σ)</p>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-arrow-up"></i>
@@ -299,122 +586,475 @@
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-calculator"></i>
-                    <h3>σ</h3>
-                    <p>Standard Deviation</p>
+                    <h3 id="overallSigma">σ</h3>
+                    <p>Std Deviation of Deviations</p>
                 </div>
             </div>
 
-            <!-- DEVIATION BAR CHART -->
+            <!-- ③ DEVIATION FORMULA -->
+            <div class="formula-box">
+                <h3><i class="fas fa-square-root-variable"></i> &nbsp;Deviation Formula Used</h3>
+                <div class="formula-main">
+                    σ &nbsp;=&nbsp; √( Σ(x − μ)² / N )
+                </div>
+                <div class="formula-legend">
+                    <span><strong>σ</strong> = Standard Deviation</span>
+                    <span><strong>x</strong> = Individual login risk score</span>
+                    <span><strong>μ</strong> = Mean (average) risk score</span>
+                    <span><strong>N</strong> = Total number of login events</span>
+                    <span><strong>Σ</strong> = Sum over all events</span>
+                </div>
+                <div class="formula-legend"
+                    style="margin-top:10px; border-top:1px solid rgba(6,182,212,0.1); padding-top:10px;">
+                    <span style="color:#22d3ee; font-size:0.8rem;"><i class="fas fa-microchip"></i> <strong>AI
+                            Engine:</strong> These normalized deviation scores are fed directly into the
+                        <strong>CatBoost Classifier</strong> for real-time risk prediction.</span>
+                </div>
+            </div>
+
+            <!-- ④ & ⑤  CURRENT LOGIN COMPARISON + FEATURE BREAKDOWN -->
+            <div class="two-col">
+
+                <!-- Current Login Comparison Panel -->
+                <div class="panel">
+                    <h3><i class="fas fa-bolt"></i> &nbsp;Real-Time: Current vs Historical Mean</h3>
+                    <select class="user-select" id="cmpUserSelect" onchange="renderComparison()">
+                        <option value="">— Select User —</option>
+                    </select>
+                    <div id="cmpBody">
+                        <div style="color:#94a3b8;font-size:.85rem;text-align:center;padding:20px;">
+                            Select a user to view comparison
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;font-size:.78rem;color:#64748b;">
+                        ℹ High difference from mean indicates anomalous behaviour.
+                    </div>
+                </div>
+
+                <!-- Suspicious Feature Breakdown -->
+                <div class="panel">
+                    <h3><i class="fas fa-magnifying-glass-chart"></i> &nbsp;Suspicious Feature Breakdown</h3>
+                    <select class="user-select" id="featUserSelect" onchange="renderFeatureBreakdown()">
+                        <option value="">— Select User —</option>
+                    </select>
+                    <div id="featBody">
+                        <div style="color:#94a3b8;font-size:.85rem;text-align:center;padding:20px;">
+                            Select a user to view breakdown
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ⑥ BAR CHART — Deviation Per User -->
             <div class="chart-box">
-                <h3><i class="fas fa-chart-bar"></i> Deviation per User</h3>
-                <div class="bar-chart" id="deviationChart">
-                    <p style="color:#94a3b8;text-align:center;width:100%">Loading chart...</p>
-                </div>
+                <h3><i class="fas fa-chart-bar"></i> &nbsp;Deviation Bar Chart — Std Deviation (σ) per User</h3>
+                <canvas id="barChart"></canvas>
             </div>
 
-            <!-- DETAILED TABLE -->
+            <!-- ⑥b LINE CHART — Risk over Time (selected user) -->
+            <div class="chart-box">
+                <h3><i class="fas fa-chart-line"></i> &nbsp;Risk Score Trend — Login History
+                    <select id="lineUserSelect" onchange="renderLineChart()"
+                        style="background:#020617;border:1px solid rgba(6,182,212,.3);color:#f1f5f9;padding:5px 10px;border-radius:6px;font-size:.8rem;margin-left:12px;">
+                        <option value="">— Select User —</option>
+                    </select>
+                </h3>
+                <canvas id="lineChart"></canvas>
+            </div>
+
+            <!-- ⑦ PER-USER TABLE -->
             <div class="table-box">
+                <div class="table-title">
+                    <i class="fas fa-table"></i> &nbsp;Per-User Deviation Analysis
+                </div>
                 <table>
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>User Email</th>
                             <th>Events</th>
                             <th>Mean Score</th>
-                            <th>Std Deviation (σ)</th>
+                            <th>σ (Std Dev)</th>
                             <th>Min</th>
                             <th>Max</th>
-                            <th>Category</th>
-                            <th>Deviation Bar</th>
+                            <th>Variance</th>
+                            <th>Risk Level</th>
+                            <th>AI Explanation</th>
+                            <th>Action Taken</th>
+                            <th>Progress</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody id="devTable">
                         <tr>
-                            <td colspan="8" style="text-align:center;color:#94a3b8">Loading deviation data...</td>
+                            <td colspan="12" style="text-align:center;color:#94a3b8">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="footer">
-                © 2026 AI Cyber Shield — Deviation Analysis Module
+                © 2026 AI Cyber Shield — Deviation Analysis Module &nbsp;|&nbsp;
+                σ = √(Σ(x−μ)²/N)
             </div>
 
         </section>
     </div>
 
     <script>
-        // ----- Role check -----
-        const role = localStorage.getItem('role');
-        if (!role) {
-            alert("Please login first.");
-            window.location.href = '/';
+        // ── Auth Guard ──
+        const savedRole = localStorage.getItem("role");
+        if (!savedRole) {
+            window.location.href = "/";
         }
 
-        // ----- Fetch Deviation Data -----
+        // Hide admin-only links if not admin
+        if (savedRole !== "admin") {
+            document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+        }
+
+        let allUsers = [];
+        let barChartInstance = null;
+        let lineChartInstance = null;
+
+        // ---- Fetch Deviation Data ----
         async function loadDeviation() {
             try {
-                const response = await fetch("http://127.0.0.1:5000/api/deviation-data");
-                if (!response.ok) throw new Error("Failed to fetch deviation data");
+                const response = await fetch("/api/deviation-data", {
+                    headers: { "Authorization": localStorage.getItem("token") }
+                });
 
+                if (!response.ok) {
+                    const errData = await response.json();
+                    if (response.status === 403 && errData.status === "blocked") {
+                        sessionStorage.setItem("block_info", JSON.stringify(errData));
+                        window.location.href = "/blocked-account";
+                        return;
+                    }
+                    if (response.status === 401 || response.status === 403) {
+                        alert("Unauthorized. Please login.");
+                        window.location.href = "/";
+                    }
+                    throw new Error("Failed to fetch (Status: " + response.status + ")");
+                }
                 const data = await response.json();
 
-                // Overall stats
-                document.getElementById("totalUsers").textContent = data.overall.total_users_analyzed;
-                document.getElementById("meanDev").textContent = data.overall.mean_deviation;
-                document.getElementById("maxDev").textContent = data.overall.max_deviation;
+                allUsers = data.users || [];
 
-                // Table
-                const tbody = document.getElementById("devTable");
-                tbody.innerHTML = "";
+                // ① System Risk Banner
+                const gr = data.global_risk || {};
+                document.getElementById("chipLow").textContent = `🟢 ${gr.low ?? 0} Stable Users`;
+                document.getElementById("chipMed").textContent = `🟡 ${gr.medium ?? 0} Medium Risk`;
+                document.getElementById("chipHigh").textContent = `🔴 ${gr.high ?? 0} High Risk`;
+                document.getElementById("lastRefresh").textContent = `Refreshed: ${new Date().toLocaleTimeString()}`;
 
-                if (data.users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#94a3b8">No deviation data available. Users need login activity first.</td></tr>`;
-                    document.getElementById("deviationChart").innerHTML = `<p style="color:#94a3b8;text-align:center;width:100%">No data to chart</p>`;
+                // ② Stat Cards
+                const ov = data.overall || {};
+                document.getElementById("totalUsers").textContent = ov.total_users_analyzed ?? "--";
+                document.getElementById("meanDev").textContent = ov.mean_deviation ?? "--";
+                document.getElementById("maxDev").textContent = ov.max_deviation ?? "--";
+                document.getElementById("overallSigma").textContent = ov.std_deviation ?? "σ";
+
+                if (allUsers.length === 0) {
+                    document.getElementById("devTable").innerHTML =
+                        `<tr><td colspan="12" style="text-align:center;color:#94a3b8">
+                        No deviation data. Users need login activity first.
+                    </td></tr>`;
                     return;
                 }
 
-                data.users.forEach(u => {
-                    const barWidth = Math.min((u.std_deviation / 50) * 100, 100);
-                    tbody.innerHTML += `
-              <tr>
-                <td>${u.email}</td>
-                <td>${u.total_events}</td>
-                <td>${u.mean_score}</td>
-                <td><strong>${u.std_deviation}</strong></td>
-                <td>${u.min_score}</td>
-                <td>${u.max_score}</td>
-                <td><span class="badge" style="background:${u.risk_color}">${u.risk_category}</span></td>
-                <td>
-                  <div class="dev-bar-container">
-                    <div class="dev-bar" style="width:${barWidth}%;background:${u.risk_color}"></div>
-                  </div>
-                </td>
-              </tr>`;
+                // Populate user selects
+                const selects = ["cmpUserSelect", "featUserSelect", "lineUserSelect"];
+                selects.forEach(id => {
+                    const sel = document.getElementById(id);
+                    // keep first option
+                    while (sel.options.length > 1) sel.remove(1);
+                    allUsers.forEach((u, i) => {
+                        const opt = document.createElement("option");
+                        opt.value = i; opt.textContent = u.email;
+                        sel.appendChild(opt);
+                    });
                 });
 
-                // Bar Chart
-                const chartEl = document.getElementById("deviationChart");
-                chartEl.innerHTML = "";
-                const maxDev = Math.max(...data.users.map(u => u.std_deviation), 1);
+                // ⑦ Table
+                buildTable(allUsers);
 
-                data.users.forEach(u => {
-                    const heightPct = Math.max((u.std_deviation / maxDev) * 100, 5);
-                    const emailShort = u.email.split("@")[0];
-                    chartEl.innerHTML += `
-              <div class="bar-item">
-                <div class="bar-value">${u.std_deviation}</div>
-                <div class="bar" style="height:${heightPct}%;background:${u.risk_color}"></div>
-                <div class="bar-label">${emailShort}</div>
-              </div>`;
-                });
+                // ⑥ Bar chart
+                buildBarChart(allUsers);
+
+                // Auto-select first user for panels
+                if (allUsers.length > 0) {
+                    ["cmpUserSelect", "featUserSelect", "lineUserSelect"].forEach(id => {
+                        document.getElementById(id).value = 0;
+                    });
+                    renderComparison();
+                    renderFeatureBreakdown();
+                    renderLineChart();
+                }
 
             } catch (err) {
                 console.error(err);
                 document.getElementById("devTable").innerHTML =
-                    `<tr><td colspan="8" style="text-align:center;color:red">Error loading deviation data</td></tr>`;
+                    `<tr><td colspan="12" style="text-align:center;color:red">Error loading data — check backend.</td></tr>`;
             }
         }
 
+        // ---- ⑦ Build Table ----
+        function buildTable(users) {
+            const tbody = document.getElementById("devTable");
+            tbody.innerHTML = "";
+            users.forEach((u, idx) => {
+                const barWidth = Math.min((u.std_deviation / 50) * 100, 100);
+                const badgeClass = u.risk_level.includes("Low") ? "badge-low" : u.risk_level.includes("Medium") ? "badge-medium" : "badge-high";
+                const varBadge = u.variance_category === "Stable" ? "badge-stable" : u.variance_category === "Moderate Variance" ? "badge-medium" : "badge-high";
+                const actionIcon = u.risk_level.includes("Low") ? "✅" : u.risk_level.includes("Medium") ? "🔐" : "🔒";
+
+                tbody.innerHTML += `
+            <tr>
+                <td style="color:#64748b">${idx + 1}</td>
+                <td><i class="fas fa-user" style="color:#06b6d4;margin-right:6px;font-size:.8rem"></i>${u.email}</td>
+                <td>${u.total_events}</td>
+                <td><strong>${u.mean_score}</strong></td>
+                <td style="color:${u.risk_color};font-weight:700">${u.std_deviation}</td>
+                <td>${u.min_score}</td>
+                <td>${u.max_score}</td>
+                <td><span class="badge ${varBadge}">${u.variance_category}</span></td>
+                <td><span class="badge ${badgeClass}">${u.risk_emoji} ${u.risk_level}</span></td>
+                <td style="font-size:.72rem; max-width:200px; color:#cbd5f5; line-height:1.3;">
+                    <i class="fas fa-brain" style="color:#22d3ee; font-size:0.75rem; margin-right:4px;"></i>
+                    ${u.latest_xai_reason}
+                </td>
+                <td style="font-size:.82rem">${actionIcon} ${u.action_taken}</td>
+                <td style="min-width:80px">
+                    <div class="dev-bar-bg">
+                        <div class="dev-bar" style="width:${barWidth}%;background:${u.risk_color}"></div>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn-del" onclick="deleteUserDeviation(${u.user_id}, '${u.email}')" title="Clear deviation data">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>`;
+            });
+        }
+
+        // ---- ⑥ Bar Chart ----
+        function buildBarChart(users) {
+            const ctx = document.getElementById("barChart").getContext("2d");
+            if (barChartInstance) barChartInstance.destroy();
+
+            const labels = users.map(u => u.email.split("@")[0]);
+            const values = users.map(u => u.std_deviation);
+            const colors = users.map(u => u.risk_color);
+            const borderColors = colors.map(c => c + "cc");
+
+            barChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: "Std Deviation (σ)",
+                        data: values,
+                        backgroundColor: colors.map(c => c + "33"),
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: "#94a3b8", font: { family: "Poppins" } } },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: ctx => {
+                                    const u = users[ctx.dataIndex];
+                                    return [`Risk: ${u.risk_level}`, `Action: ${u.action_taken}`];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(6,182,212,.05)" } },
+                        y: {
+                            ticks: { color: "#94a3b8" }, grid: { color: "rgba(6,182,212,.05)" },
+                            title: { display: true, text: "σ Value", color: "#94a3b8" }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---- ⑥b Line Chart ----
+        function renderLineChart() {
+            const idx = parseInt(document.getElementById("lineUserSelect").value);
+            if (isNaN(idx) || !allUsers[idx]) {
+                if (lineChartInstance) lineChartInstance.destroy();
+                return;
+            }
+            const u = allUsers[idx];
+            const ctx = document.getElementById("lineChart").getContext("2d");
+            if (lineChartInstance) lineChartInstance.destroy();
+
+            const dataPoints = u.score_history.length > 0 ? u.score_history : [u.mean_score];
+            const labels = dataPoints.map((_, i) => `Login ${i + 1}`);
+
+            lineChartInstance = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: `Risk Score — ${u.email.split("@")[0]}`,
+                            data: dataPoints,
+                            borderColor: u.risk_color,
+                            backgroundColor: u.risk_color + "22",
+                            tension: 0.4, fill: true, pointRadius: 5,
+                            pointBackgroundColor: u.risk_color
+                        },
+                        {
+                            label: "Historical Mean",
+                            data: dataPoints.map(() => u.historical_mean),
+                            borderColor: "#06b6d4", borderDash: [6, 4],
+                            borderWidth: 2, pointRadius: 0, fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: "#94a3b8", font: { family: "Poppins" } } } },
+                    scales: {
+                        x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(6,182,212,.05)" } },
+                        y: {
+                            min: 0, max: 100,
+                            ticks: { color: "#94a3b8" }, grid: { color: "rgba(6,182,212,.05)" },
+                            title: { display: true, text: "Risk Score (%)", color: "#94a3b8" }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---- ④ Current vs Historical Comparison ----
+        function renderComparison() {
+            const idx = parseInt(document.getElementById("cmpUserSelect").value);
+            const box = document.getElementById("cmpBody");
+            if (isNaN(idx) || !allUsers[idx]) { box.innerHTML = `<div style="color:#94a3b8;font-size:.85rem;text-align:center;padding:20px;">Select a user</div>`; return; }
+            const u = allUsers[idx];
+            const diff = u.score_diff;
+            const diffColor = diff > 20 ? "#ef4444" : diff > 0 ? "#f59e0b" : "#10b981";
+            const diffSign = diff >= 0 ? "+" : "";
+            const statusColor = u.comparison_status === "Suspicious" ? "#ef4444" : u.comparison_status === "Elevated" ? "#f59e0b" : "#10b981";
+
+            box.innerHTML = `
+        <div class="cmp-row">
+            <span class="cmp-label">📊 Historical Mean</span>
+            <span class="cmp-value">${u.historical_mean}</span>
+        </div>
+        <div class="cmp-row">
+            <span class="cmp-label">🎯 Current Score</span>
+            <span class="cmp-value" style="color:${u.risk_color}">${u.current_score}</span>
+        </div>
+        <div class="cmp-row">
+            <span class="cmp-label">📐 Difference</span>
+            <span class="cmp-value" style="color:${diffColor}">${diffSign}${diff}</span>
+        </div>
+        <div class="cmp-row">
+            <span class="cmp-label">🔔 Status</span>
+            <span class="cmp-value" style="color:${statusColor}">⬤ ${u.comparison_status}</span>
+        </div>
+        <div class="cmp-row">
+            <span class="cmp-label">🤖 AI Decision</span>
+            <span class="cmp-value">${u.action_taken}</span>
+        </div>
+        <div style="margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;color:#64748b;margin-bottom:4px;">
+                <span>0</span><span>Score</span><span>100</span>
+            </div>
+            <div style="background:rgba(30,41,59,.8);border-radius:4px;height:10px;position:relative;">
+                <div style="height:100%;border-radius:4px;background:${u.risk_color};width:${u.current_score}%;transition:width 1s ease;"></div>
+                <div style="position:absolute;top:0;left:${u.historical_mean}%;width:2px;height:100%;background:#06b6d4;" title="Historical Mean"></div>
+            </div>
+            <div style="font-size:.72rem;color:#94a3b8;margin-top:4px;text-align:right;">Cyan line = Historical Mean</div>
+        </div>`;
+        }
+
+        // ---- ⑤ Feature Breakdown ----
+        function renderFeatureBreakdown() {
+            const idx = parseInt(document.getElementById("featUserSelect").value);
+            const box = document.getElementById("featBody");
+            if (isNaN(idx) || !allUsers[idx]) { box.innerHTML = `<div style="color:#94a3b8;font-size:.85rem;text-align:center;padding:20px;">Select a user</div>`; return; }
+            const u = allUsers[idx];
+            const fb = u.feature_breakdown || {};
+
+            const features = [
+                { label: "📍 Location Changes", count: fb.location_changes ?? 0, risk: fb.location_risk ?? 0, color: "#f59e0b", icon: "fa-map-marker-alt" },
+                { label: "💻 Device Mismatches", count: fb.device_mismatches ?? 0, risk: fb.device_risk ?? 0, color: "#ef4444", icon: "fa-laptop" },
+                { label: "🌙 Odd-Hour Logins", count: fb.odd_time_logins ?? 0, risk: fb.time_risk ?? 0, color: "#a855f7", icon: "fa-moon" }
+            ];
+
+            let html = "";
+            features.forEach(f => {
+                const pct = Math.min((f.risk / 40) * 100, 100);
+                html += `
+            <div class="feat-item">
+                <span class="feat-tag"><i class="fas ${f.icon}" style="color:${f.color}"></i> ${f.label} (${f.count}×)</span>
+                <div class="feat-bar-wrap">
+                    <div class="feat-bar-bg">
+                        <div class="feat-bar-fill" style="width:${pct}%;background:${f.color}"></div>
+                    </div>
+                </div>
+                <span class="feat-score" style="color:${f.color}">+${f.risk}</span>
+            </div>`;
+            });
+
+            const total = fb.total_computed_risk ?? 0;
+            const trColor = total >= 60 ? "#ef4444" : total >= 30 ? "#f59e0b" : "#10b981";
+            html += `
+        <div style="margin-top:14px;padding:12px 14px;background:rgba(0,0,0,.25);border-radius:8px;border-left:3px solid ${trColor};">
+            <span style="color:#94a3b8;font-size:.83rem;">Total Computed Risk Score</span>
+            <span style="float:right;font-size:1.15rem;font-weight:700;color:${trColor}">${total}</span>
+        </div>
+        <div style="margin-top:14px; padding:12px; background:rgba(6,182,212,0.05); border-radius:8px; border:1px solid rgba(6,182,212,0.1);">
+            <div style="color:#22d3ee; font-size:0.75rem; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <i class="fas fa-robot"></i> CATBOOST PERSONALIZED XAI
+            </div>
+            <div style="font-size:0.75rem; color:#cbd5f5; line-height:1.4;">
+                ${u.latest_xai_reason}
+            </div>
+        </div>`;
+
+            box.innerHTML = html;
+            // animate bars
+            setTimeout(() => { }, 50);
+        }
+
+        // ---- Delete User Deviation ----
+        async function deleteUserDeviation(userId, email) {
+            if (!confirm(`Clear ALL deviation data for ${email}?\n\nThis deletes their login logs and attack logs. This cannot be undone.`)) return;
+            try {
+                const res = await fetch("/api/delete-deviation-user", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": localStorage.getItem("token")
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    alert("✅ " + d.message);
+                    loadDeviation();
+                } else {
+                    alert("❌ " + d.message);
+                }
+            } catch (err) {
+                alert("Server error: " + err.message);
+            }
+        }
+
+        // ---- Init ----
         loadDeviation();
     </script>
 </body>

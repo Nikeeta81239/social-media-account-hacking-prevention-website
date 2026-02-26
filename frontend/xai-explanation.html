@@ -56,6 +56,7 @@
       font-family: 'Orbitron', sans-serif;
       background: linear-gradient(90deg, #06b6d4, #22d3ee);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -171,10 +172,10 @@
     <aside class="sidebar">
       <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
       <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
-      <a href="/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
+      <a href="/admin-dashboard" class="admin-only"><i class="fas fa-user-lock"></i> Admin Panel</a>
       <a href="/xai" class="active"><i class="fas fa-brain"></i> XAI Explanation</a>
-      <a href="/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
-      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation</a>
+      <a href="/admin-blocked" class="admin-only"><i class="fas fa-ban"></i> Blocked Accounts</a>
+      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation Analysis</a>
       <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
     </aside>
 
@@ -205,16 +206,41 @@
         </ul>
       </div>
 
+      <!-- TRUST SCORE GAUGE -->
+      <div class="box">
+        <h3>🛡️ Behavior Trust Score</h3>
+        <p>Based on behavioral patterns, the model calculates a current trust rating:</p>
+        <div
+          style="margin-top:20px; background:rgba(2,6,23,.5); border-radius:12px; padding:20px; border:1px solid rgba(6,182,212,.1);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span id="trustLabel" style="font-weight:700; color:#06b6d4;">Calculating...</span>
+            <span id="trustPercent" style="font-size:1.5rem; font-weight:700; color:#f1f5f9;">0%</span>
+          </div>
+          <div
+            style="height:12px; background:rgba(30,41,59,.8); border-radius:6px; overflow:hidden; position:relative;">
+            <div id="trustBar"
+              style="height:100%; width:0%; transition: width 1.5s cubic-bezier(0.1, 0, 0.3, 1); background: linear-gradient(90deg, #06b6d4, #22d3ee);">
+            </div>
+            <div style="position:absolute; top:0; left:50%; width:2px; height:100%; background:rgba(239,68,68,0.5);"
+              title="Decision Threshold (50%)"></div>
+          </div>
+          <p style="margin-top:10px; font-size:0.75rem; color:#64748b;">
+            <i class="fas fa-info-circle"></i> Accounts with trust scores below <b>50%</b> are flagged for additional
+            verification.
+          </p>
+        </div>
+      </div>
+
       <!-- ELI5 EXPLANATION -->
       <div class="box">
-        <h3>🌍 ELI5 – Global Feature Importance</h3>
-        <p>Top features influencing overall model decisions:</p>
-        <ul class="reason-list">
-          <li>Followers–Following Ratio</li>
-          <li>Account Age</li>
-          <li>Post Frequency</li>
-          <li>Engagement Rate</li>
-          <li>Profile Completeness</li>
+        <h3>🌍 GLOBAL FEATURE IMPORTANCE (ELI5)</h3>
+        <p id="narrativeText"
+          style="color:#cbd5e1; font-style:italic; margin-bottom:15px; border-left:2px solid #06b6d4; padding-left:10px;">
+          Analyzing behavioral patterns...
+        </p>
+        <p>Top global indicators affecting this CatBoost model:</p>
+        <ul class="reason-list" id="eli5List">
+          <li>Loading global importance...</li>
         </ul>
       </div>
 
@@ -224,6 +250,23 @@
         <p id="decisionText">
           Evaluating risk and trust level...
         </p>
+      </div>
+
+      <!-- ADMIN ACTIONS SECTION -->
+      <div id="adminActionsBox" class="box" style="border-color:#ef4444; display:none;">
+        <h3 style="color:#ef4444;"><i class="fas fa-user-shield"></i> Admin Security Actions</h3>
+        <p id="adminUserContext" style="margin-bottom:15px; color:#94a3b8;">Reviewing security profile for: loading...
+        </p>
+        <div style="display:flex; gap:12px;">
+          <button onclick="adminAction('block')"
+            style="background:#ef4444; color:white; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; border:none;">
+            <i class="fas fa-ban"></i> Block User
+          </button>
+          <button onclick="adminAction('allow')"
+            style="background:#10b981; color:white; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; border:none;">
+            <i class="fas fa-check"></i> Authorize / Allow
+          </button>
+        </div>
       </div>
 
       <div class="footer">
@@ -236,17 +279,18 @@
 
 
   <script>
-    // ----- Role-based Access -----
-    const role = localStorage.getItem('role'); // 'user' or 'admin'
-    if (!role) {
-      alert("Please login first.");
-      window.location.href = '/login';
+    // ----- Auth Guard -----
+    const savedRole = localStorage.getItem('role');
+    const params = new URLSearchParams(window.location.search);
+    const targetUserId = params.get('user_id') || localStorage.getItem('user_id');
+
+    if (!savedRole || !targetUserId) {
+      window.location.href = '/';
     }
 
-    const userId = localStorage.getItem("user_id");
-    if (!userId) {
-      alert("User not identified.");
-      window.location.href = '/dashboard';
+    // Hide admin-only links if not admin
+    if (savedRole !== "admin") {
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
     }
 
     // ----- Fetch Latest XAI Explanation -----
@@ -262,8 +306,23 @@
       decisionTextEl.textContent = "Evaluating risk and trust level...";
 
       try {
-        const response = await fetch(`/api/xai/latest?user_id=${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch XAI data");
+        const response = await fetch(`/api/xai/latest?user_id=${targetUserId}`, {
+          headers: { "Authorization": localStorage.getItem("token") }
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          if (response.status === 403 && errData.status === "blocked") {
+            sessionStorage.setItem("block_info", JSON.stringify(errData));
+            window.location.href = "/blocked-account";
+            return;
+          }
+          if (response.status === 401 || response.status === 403) {
+            alert("Unauthorized. Please login again.");
+            window.location.href = "/";
+          }
+          throw new Error("Failed to fetch XAI data (Status: " + response.status + ")");
+        }
 
         const data = await response.json();
 
@@ -273,32 +332,111 @@
           return;
         }
 
+        // Parse enhanced data if it exists
+        let enhancedData = null;
+        try {
+          enhancedData = JSON.parse(data.top_reasons);
+        } catch (e) { /* Not JSON */ }
+
         // Final decision badge
         finalDecisionEl.textContent = `${data.decision} (${data.risk_score}%)`;
-        finalDecisionEl.className = "badge " + (data.decision === "Suspicious" ? "fake" : "genuine");
+        finalDecisionEl.className = "badge " +
+          (data.risk_score >= 70 ? "fake" : (data.risk_score >= 31 ? "medium" : "genuine"));
 
-        // LIME top reasons
-        limeListEl.innerHTML = "";
-        if (data.top_reasons) {
-          data.top_reasons.split(",").forEach(reason => {
+        // Reason & Suggested Action
+        if (enhancedData) {
+          document.getElementById("narrativeText").innerHTML = `
+                <b>Reason:</b> ${enhancedData.reason}<br>
+                <div style="margin-top:10px; color:#facc15;"><b>Action:</b> ${enhancedData.suggested_action}</div>
+            `;
+
+          // Dynamic Analysis (Impact list)
+          limeListEl.innerHTML = "";
+          enhancedData.dynamic_analysis.forEach(item => {
             const li = document.createElement("li");
-            li.textContent = "• " + reason.trim();
+            const isPositive = item.includes("+");
+            li.innerHTML = `
+                    <i class="fas ${isPositive ? 'fa-plus-circle' : 'fa-minus-circle'}" 
+                       style="color:${isPositive ? '#ef4444' : '#10b981'}; margin-right:8px;"></i> ${item}
+                `;
             limeListEl.appendChild(li);
           });
         } else {
-          limeListEl.innerHTML = "<li>No local explanations available.</li>";
+          document.getElementById("narrativeText").textContent = data.full_narrative || "No specific narrative available.";
+          limeListEl.innerHTML = "<li>Individual feature impact data not available.</li>";
+        }
+
+        // Trust Score logic
+        const trustVal = data.trust_score || (100 - data.risk_score);
+        document.getElementById("trustPercent").textContent = `${trustVal}%`;
+        document.getElementById("trustBar").style.width = `${trustVal}%`;
+
+        const trustLabel = document.getElementById("trustLabel");
+        if (trustVal >= 70) {
+          trustLabel.textContent = "🛡️ HIGHLY TRUSTED";
+          trustLabel.style.color = "#10b981";
+        } else if (trustVal >= 31) {
+          trustLabel.textContent = "🛡️ MODERATE TRUST";
+          trustLabel.style.color = "#f59e0b";
+        } else {
+          trustLabel.textContent = "⚠️ LOW TRUST / ALERT";
+          trustLabel.style.color = "#ef4444";
+        }
+
+        // Dynamic ELI5 (Global Weights)
+        const eli5ListEl = document.getElementById("eli5List");
+        eli5ListEl.innerHTML = "";
+        const weights = (enhancedData && enhancedData.feature_weights) ? enhancedData.feature_weights : data.feature_weights;
+
+        if (weights) {
+          Object.entries(weights)
+            .sort((a, b) => b[1] - a[1]) // Sort by weight
+            .forEach(([feat, weight]) => {
+              const li = document.createElement("li");
+              const featName = feat.replace("_", " ").toUpperCase();
+              const pct = Math.round(weight * 100);
+              li.innerHTML = `<b>${featName}</b> — Overall model impact: <span style="color:#06b6d4">${pct}%</span>`;
+              eli5ListEl.appendChild(li);
+            });
         }
 
         // What-if explanation
-        decisionTextEl.innerHTML = data.what_if
-          ? `<b>What-if:</b> ${data.what_if}`
-          : "<b>What-if:</b> No alternative scenarios provided.";
+        decisionTextEl.innerHTML = `<b>Dynamic Analysis:</b> ${data.what_if || 'No alternative scenarios.'} <br><br> <b>Threshold Logic:</b> Current system threshold is <b>50% Probability</b>. This attempt resulted in <b>${data.risk_score}%</b> probability of unauthorized access.`;
+
+        // Admin Context
+        if (savedRole === 'admin') {
+          document.getElementById('adminActionsBox').style.display = 'block';
+          document.getElementById('adminUserContext').innerHTML = `Reviewing security profile for: <b style="color:#f1f5f9">${data.email || targetUserId}</b>`;
+          // Store email for actions
+          window.viewedUserEmail = data.email;
+        }
 
       } catch (err) {
         console.error("XAI fetch error:", err);
         finalDecisionEl.textContent = "Error";
         limeListEl.innerHTML = "<li style='color:red'>Failed to load explanations</li>";
         decisionTextEl.textContent = "Unable to evaluate risk at this time.";
+      }
+    }
+
+    async function adminAction(action) {
+      if (!window.viewedUserEmail) return alert("Email not available for action.");
+      const reason = action === 'block' ? prompt("Enter block reason:", "Suspicious pattern detected in XAI") : null;
+      if (action === 'block' && reason === null) return;
+
+      try {
+        const res = await fetch("/api/admin-update-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem("token")
+          },
+          body: JSON.stringify({ user: window.viewedUserEmail, action: action, reason: reason })
+        });
+        const d = await res.json();
+        alert(d.message);
+      } catch (e) {
+        alert("Action failed.");
       }
     }
 

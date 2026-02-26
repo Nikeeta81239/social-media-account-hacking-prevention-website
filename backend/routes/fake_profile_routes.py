@@ -1,13 +1,16 @@
 from flask import Blueprint, request, jsonify
 from database import get_db
 from ai_ml.fake_profile_detection import analyze_profile_trustLevel
+from security.jwt_auth import token_required
 
 fake_profile_bp = Blueprint("fake_profile", __name__)
 
 @fake_profile_bp.route("/analyze-profile", methods=["POST"])
-def analyze_user_profile():
+@token_required()
+def analyze_user_profile(current_user_id, role):
     data = request.get_json()
-    user_id = data.get("user_id")
+    user_id = current_user_id
+
     followers = data.get("followers", 0)
     following = data.get("following", 0)
     posts = data.get("posts", 0)
@@ -34,8 +37,10 @@ def analyze_user_profile():
         "analysis": result
     }), 200
 
-@fake_profile_bp.route("/profile-stats/<int:user_id>", methods=["GET"])
-def get_profile_stats(user_id):
+@fake_profile_bp.route("/profile-stats", methods=["GET"])
+@token_required()
+def get_profile_stats(current_user_id, role):
+    user_id = current_user_id
     db = get_db()
     cur = db.cursor(dictionary=True)
     

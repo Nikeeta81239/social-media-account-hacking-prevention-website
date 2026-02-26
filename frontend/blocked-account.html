@@ -3,10 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Blocked Accounts | AI Cyber Shield</title>
+  <title>Account Blocked | AI Cyber Shield</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Fonts & Icons -->
   <link
     href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
     rel="stylesheet">
@@ -22,53 +21,48 @@
 
     body {
       background: linear-gradient(135deg, #020617, #0f172a);
-      color: #f1f5f9;
       min-height: 100vh;
+      color: #f1f5f9;
     }
 
     .cyber-grid {
       position: fixed;
       inset: 0;
-      background:
-        linear-gradient(rgba(6, 182, 212, .02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(6, 182, 212, .02) 1px, transparent 1px);
-      background-size: 30px 30px;
+      background: linear-gradient(rgba(239, 68, 68, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, .05) 1px, transparent 1px);
+      background-size: 50px 50px;
       z-index: -1;
     }
 
-    /* NAVBAR */
-    .navbar {
-      background: rgba(15, 23, 42, .9);
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(6, 182, 212, .2);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo h2 {
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(90deg, #06b6d4, #22d3ee);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* LAYOUT */
+    /* ===== LAYOUT FIX ADDED ===== */
     .main {
       display: grid;
       grid-template-columns: 240px 1fr;
+      min-height: 100vh;
     }
 
     .sidebar {
-      background: rgba(15, 23, 42, .8);
+      background: rgba(15, 23, 42, .9);
       padding: 25px;
-      border-right: 1px solid rgba(6, 182, 212, .2);
+      border-right: 1px solid rgba(239, 68, 68, .3);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .verified-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #10b981;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
 
     .sidebar a {
@@ -84,88 +78,136 @@
 
     .sidebar a:hover,
     .sidebar a.active {
-      background: rgba(6, 182, 212, .15);
-      color: #06b6d4;
+      background: rgba(239, 68, 68, .15);
+      color: #ef4444;
     }
 
-    /* CONTENT */
     .content {
-      padding: 30px;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .header {
+    .block-container {
+      background: rgba(15, 23, 42, .9);
+      border: 1px solid rgba(239, 68, 68, .3);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 550px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(239, 68, 68, .15);
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyfarames pulse {
+      from {
+        box-shadow: 0 0 40px rgba(239, 68, 68, .1);
+      }
+
+      to {
+        box-shadow: 0 0 70px rgba(239, 68, 68, .25);
+      }
+    }
+
+    .icon-box {
+      font-size: 4rem;
+      color: #ef4444;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 15px;
+      color: #ef4444;
+      letter-spacing: 2px;
+    }
+
+    .timer-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid rgba(239, 68, 68, .2);
+      border-top: 4px solid #ef4444;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
+      margin: 25px auto;
+      font-size: 2.5rem;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: bold;
+      color: #ef4444;
+      animation: spin 1s linear infinite;
+    }
+
+    .timer-value {
+      animation: none;
+    }
+
+    .reason-box {
+      background: rgba(30, 41, 59, .6);
+      border-left: 4px solid #ef4444;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: left;
       margin-bottom: 25px;
     }
 
-    /* TABLE */
-    .table-box {
-      background: rgba(15, 23, 42, .85);
-      border-radius: 12px;
-      border: 1px solid rgba(6, 182, 212, .2);
-      overflow: hidden;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(6, 182, 212, .1);
-    }
-
-    th {
-      background: rgba(30, 41, 59, .7);
-      color: #94a3b8;
-      text-align: left;
-    }
-
-    tr:hover {
-      background: rgba(6, 182, 212, .05);
-    }
-
-    /* BADGES */
-    .badge {
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: .75rem;
+    .reason-title {
+      color: #ef4444;
       font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .ai {
+    .reason-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .action-box {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 20px;
+    }
+
+    .btn-return {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 30px;
       background: #ef4444;
-      color: #2b0202;
-    }
-
-    .admin {
-      background: #f59e0b;
-      color: #2a1600;
-    }
-
-    button {
-      background: #10b981;
-      color: #022c22;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
       font-weight: 600;
+      opacity: 0.5;
+      pointer-events: none;
+      transition: 0.3s;
     }
 
-    button:hover {
-      background: #22c55e;
+    .btn-return.active {
+      opacity: 1;
+      pointer-events: auto;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     }
 
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      color: #94a3b8;
-      font-size: .85rem;
+    .xai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #22d3ee;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -173,148 +215,97 @@
 <body>
   <div class="cyber-grid"></div>
 
-  <nav class="navbar">
-    <div class="logo">
-      <i class="fas fa-shield-halved"></i>
-      <h2>AI Cyber Shield</h2>
-    </div>
-    <span>Admin</span>
-  </nav>
-
   <div class="main">
-
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
       <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
       <a href="/admin-dashboard"><i class="fas fa-user-lock"></i> Admin Panel</a>
       <a href="/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
-      <a href="/blocked-account" class="active"><i class="fas fa-ban"></i> Blocked Accounts</a>
-      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation</a>
+      <a href="/admin-blocked"><i class="fas fa-ban"></i> Blocked Accounts</a>
+      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation Analysis</a>
       <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+      <div class="sidebar-footer">
+        <div class="verified-badge">
+          <i class="fas fa-check-circle"></i> Verified Security
+        </div>
+      </div>
     </aside>
 
-
+    <!-- CONTENT -->
     <section class="content">
-      <div class="header">
-        <h1>Blocked Accounts</h1>
-        <span>Accounts restricted due to security threats</span>
-      </div>
+      <div class="block-container">
+        <div class="icon-box">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <h1>ACCESS RESTRICTED</h1>
+        <div class="xai-badge"
+          style="margin-bottom: 15px; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #10b981;">
+          <i class="fas fa-check-circle"></i> Security Verified System
+        </div>
+        <p>Suspicious login activity has been detected on your account.</p>
 
-      <div class="table-box">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>IP Address</th>
-              <th>Blocked By</th>
-              <th>Reason</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="blockedTable"></tbody>
-        </table>
-      </div>
+        <div class="timer-circle">
+          <span id="countdown" class="timer-value">30</span>
+        </div>
 
-      <div class="footer">
-        © 2026 AI Cyber Shield — Account Restriction Module
+        <div class="reason-box">
+          <div class="reason-title">
+            <i class="fas fa-brain"></i> Explainable AI (XAI) Reason
+          </div>
+          <p id="xaiReason" class="reason-text">
+            Analyzing behavior patterns...
+          </p>
+          <div id="xaiMetrics"></div>
+        </div>
+
+        <div class="action-box">
+          <p>For your security, access to the dashboard and sensitive modules is temporarily restricted.</p>
+          <p>Please wait for the timer to expire before re-attempting login.</p>
+        </div>
+
+        <a href="/" id="returnBtn" class="btn-return">Return to Login</a>
       </div>
     </section>
   </div>
 
   <script>
+    // Load block info from sessionStorage
+    const blockInfo = JSON.parse(sessionStorage.getItem("block_info") || "{}");
+    const xai = blockInfo.xai || {};
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "/";
+    // Display reason
+    const reasonText = blockInfo.reason || "Unusual login frequency or unrecognized device/location detected.";
+    document.getElementById("xaiReason").textContent = reasonText;
+
+    // Display additional metrics if available
+    if (xai.dynamic_analysis) {
+      const metricsDiv = document.getElementById("xaiMetrics");
+      xai.dynamic_analysis.forEach(metric => {
+        const badge = document.createElement("span");
+        badge.className = "xai-badge";
+        badge.innerHTML = `<i class="fas fa-microchip"></i> ${metric}`;
+        metricsDiv.appendChild(badge);
+      });
     }
-    // ----- Role-based Access: Only Admin -----
-    let role = localStorage.getItem('role'); // role: 'user' or 'admin'
-    if (role !== 'admin') {
-      alert("Access Denied. Only admins can view this page.");
-      window.location.href = '/dashboard'; // redirect non-admins
-    }
 
-    // ----- Backend URL -----
-    const BASE_URL = "/api";
+    // Countdown logic
+    let timeLeft = blockInfo.time_left || 30;
+    const countdownEl = document.getElementById("countdown");
+    const returnBtn = document.getElementById("returnBtn");
 
-    // ----- Load Blocked Users from Backend -----
-    async function loadBlockedUsers() {
-      const tbody = document.getElementById("blockedTable");
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8">Loading blocked accounts...</td></tr>`;
+    const timer = setInterval(() => {
+      timeLeft--;
+      if (timeLeft < 0) timeLeft = 0;
+      countdownEl.textContent = timeLeft;
 
-      try {
-        const response = await fetch(`${BASE_URL}/blocked-users`);
-        if (!response.ok) throw new Error("Failed to fetch blocked users");
-
-        const blockedUsers = await response.json();
-
-        if (blockedUsers.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8">No blocked accounts</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = "";
-        blockedUsers.forEach(b => {
-          const badge = b.by === "AI" ? "ai" : "admin";
-          tbody.innerHTML += `
-        <tr>
-          <td>${b.user}</td>
-          <td>${b.ip}</td>
-          <td><span class="badge ${badge}">${b.by}</span></td>
-          <td>${b.reason}</td>
-          <td>
-            <button onclick="unblockUser('${b.user}')">Unblock</button>
-            <i class="fas fa-trash" style="color:#ef4444;cursor:pointer;margin-left:10px" onclick="deleteBlockedRecord('${b.user}')"></i>
-          </td>
-        </tr>`;
-        });
-
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red">Error loading blocked users</td></tr>`;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        countdownEl.textContent = "✓";
+        returnBtn.classList.add("active");
+        returnBtn.textContent = "Start Recovery Login";
       }
-    }
-
-    async function deleteBlockedRecord(userEmail) {
-      if (!confirm("Permanently delete this blocked record? (User will NOT be unblocked, just the record removed)")) return;
-      try {
-        const res = await fetch("/api/unblock-user", { // Reusing unblock for removal from list
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user: userEmail })
-        });
-        if (res.ok) {
-          alert("Record removed");
-          loadBlockedUsers();
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // ----- Unblock User Function -----
-    async function unblockUser(user) {
-      try {
-        const response = await fetch(`${BASE_URL}/unblock-user`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user })
-        });
-        if (!response.ok) throw new Error("Failed to unblock user");
-
-        const result = await response.json();
-        alert(result.message);
-
-        // Reload the table after unblocking
-        loadBlockedUsers();
-      } catch (err) {
-        console.error(err);
-        alert("Error unblocking user");
-      }
-    }
-
-    // Load blocked users on page load
-    loadBlockedUsers();
+    }, 1000);
   </script>
 </body>
 

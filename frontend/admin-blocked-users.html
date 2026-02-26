@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Blocked Accounts | AI Cyber Shield</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #020617, #0f172a);
+            color: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        .cyber-grid {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(6, 182, 212, .02) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, .02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, .9);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(6, 182, 212, .2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h2 {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, #06b6d4, #22d3ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, .8);
+            padding: 25px;
+            border-right: 1px solid rgba(6, 182, 212, .2);
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 65px);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid rgba(6, 182, 212, 0.1);
+        }
+
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #10b981;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(6, 182, 212, .15);
+            color: #06b6d4;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .table-box {
+            background: rgba(15, 23, 42, .85);
+            border-radius: 12px;
+            border: 1px solid rgba(6, 182, 212, .2);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(6, 182, 212, .1);
+        }
+
+        th {
+            background: rgba(30, 41, 59, .7);
+            color: #94a3b8;
+            text-align: left;
+        }
+
+        tr:hover {
+            background: rgba(6, 182, 212, .05);
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .ai {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .admin {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        button {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #22c55e;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: .85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cyber-grid"></div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-shield-halved"></i>
+            <h2>AI Cyber Shield</h2>
+        </div>
+        <span>Admin Control Panel</span>
+    </nav>
+
+    <div class="main">
+        <aside class="sidebar">
+            <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
+            <a href="/admin-dashboard" class="admin-only"><i class="fas fa-user-lock"></i> Admin Panel</a>
+            <a href="/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
+            <a href="/admin-blocked" class="active"><i class="fas fa-ban"></i> Blocked Accounts</a>
+            <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation Analysis</a>
+            <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+            <div class="sidebar-footer">
+                <div class="verified-badge">
+                    <i class="fas fa-check-circle"></i> Verified Security
+                </div>
+            </div>
+        </aside>
+
+        <section class="content">
+            <div class="header">
+                <h1>Blocked Accounts</h1>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <span style="color:#94a3b8; font-size:0.9rem;">Management of restricted user access</span>
+                    <button onclick="clearAllBlocked()"
+                        style="background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid #ef4444; padding:6px 15px; border-radius:8px; font-size:0.8rem; cursor:pointer;">Clear
+                        All Info</button>
+                </div>
+            </div>
+
+            <!-- Manual Block Section -->
+            <div class="table-box"
+                style="padding: 20px; margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 0.85rem;">Gmail to
+                        Block</label>
+                    <input type="email" id="manualEmail" placeholder="user@gmail.com"
+                        style="width: 100%; background: #020617; border: 1px solid rgba(6, 182, 212, 0.3); color: white; padding: 10px; border-radius: 8px;">
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <label
+                        style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 0.85rem;">Reason</label>
+                    <input type="text" id="manualReason" placeholder="e.g. Terms violation"
+                        style="width: 100%; background: #020617; border: 1px solid rgba(6, 182, 212, 0.3); color: white; padding: 10px; border-radius: 8px;">
+                </div>
+                <button onclick="manualBlock()"
+                    style="background: #ef4444; border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-user-slash"></i> Block User
+                </button>
+            </div>
+
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Blocked Time</th>
+                            <th>Detected Risk</th>
+                            <th>Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blockedTable"></tbody>
+                </table>
+            </div>
+
+            <div class="footer">
+                © 2026 AI Cyber Shield — Admin Management
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const BASE_URL = "/api";
+
+        // Check if admin
+        const savedRole = localStorage.getItem('role');
+        if (savedRole !== 'admin') {
+            window.location.href = '/dashboard';
+        }
+
+        // Hide admin-only links if not admin (though it's an admin page)
+        if (savedRole !== "admin") {
+            document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+        }
+
+        async function loadBlockedUsers() {
+            const tbody = document.getElementById("blockedTable");
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8">Loading...</td></tr>`;
+
+            try {
+                const response = await fetch(`${BASE_URL}/admin/blocked-users`, {
+                    headers: { "Authorization": localStorage.getItem("token") }
+                });
+                if (!response.ok) {
+                    const errData = await response.json();
+                    if (response.status === 403 && errData.status === "blocked") {
+                        sessionStorage.setItem("block_info", JSON.stringify(errData));
+                        window.location.href = "/blocked-account";
+                        return;
+                    }
+                    throw new Error("Failed to fetch");
+                }
+                const blockedUsers = await response.json();
+
+                if (blockedUsers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8">No accounts currently blocked</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                blockedUsers.forEach(b => {
+                    tbody.innerHTML += `
+            <tr>
+              <td><i class="fas fa-user" style="color:#94a3b8;margin-right:8px"></i>${b.email}</td>
+              <td>${b.blocked_at}</td>
+              <td><span class="badge ${b.risk >= 70 ? 'ai' : 'admin'}">${b.risk}% Risk</span></td>
+              <td>${b.reason}</td>
+              <td>
+                <button onclick="unblockUser(${b.user_id})">Unblock User</button>
+              </td>
+            </tr>`;
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red">Error loading data</td></tr>`;
+            }
+        }
+
+        async function unblockUser(userId) {
+            if (!confirm("Are you sure you want to restore access for this user?")) return;
+            try {
+                const res = await fetch("/api/admin/unblock-user", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": localStorage.getItem("token")
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                if (res.ok) {
+                    alert("User unblocked successfully");
+                    loadBlockedUsers();
+                }
+            } catch (err) {
+                alert("Action failed");
+            }
+        }
+
+        async function clearAllBlocked() {
+            if (!confirm("Are you sure you want to UNBLOCK ALL users? This action will restore access to all currently restricted accounts.")) return;
+            try {
+                const res = await fetch("/api/clear-all-blocked", {
+                    method: "POST",
+                    headers: { "Authorization": localStorage.getItem("token") }
+                });
+                if (res.ok) {
+                    alert("All users unblocked.");
+                    loadBlockedUsers();
+                }
+            } catch (e) { alert("Action failed."); }
+        }
+
+        async function manualBlock() {
+            const email = document.getElementById("manualEmail").value.trim();
+            const reason = document.getElementById("manualReason").value.trim() || "Admin manual block";
+            if (!email) return alert("Please enter an email");
+
+            try {
+                const res = await fetch("/api/admin-update-user", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": localStorage.getItem("token")
+                    },
+                    body: JSON.stringify({ user: email, action: "block", reason: reason })
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (res.ok) {
+                    document.getElementById("manualEmail").value = "";
+                    document.getElementById("manualReason").value = "";
+                    loadBlockedUsers();
+                }
+            } catch (err) {
+                alert("Action failed");
+            }
+        }
+
+        loadBlockedUsers();
+    </script>
+</body>
+
+</html>

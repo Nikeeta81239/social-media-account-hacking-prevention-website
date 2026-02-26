@@ -56,6 +56,7 @@
       font-family: 'Orbitron', sans-serif;
       background: linear-gradient(90deg, #06b6d4, #22d3ee);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -69,6 +70,24 @@
       background: rgba(15, 23, 42, .8);
       padding: 25px;
       border-right: 1px solid rgba(6, 182, 212, .2);
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 65px);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(6, 182, 212, 0.1);
+    }
+
+    .verified-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #10b981;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
 
     .sidebar a {
@@ -80,6 +99,7 @@
       color: #94a3b8;
       text-decoration: none;
       border-radius: 8px;
+      transition: .2s;
     }
 
     .sidebar a:hover,
@@ -103,7 +123,7 @@
     /* STATS */
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
       margin-bottom: 30px;
     }
@@ -114,6 +134,12 @@
       border-radius: 12px;
       padding: 20px;
       text-align: center;
+      transition: .3s;
+    }
+
+    .stat-card:hover {
+      border-color: #06b6d4;
+      transform: translateY(-3px);
     }
 
     .stat-card i {
@@ -139,6 +165,16 @@
       overflow: hidden;
     }
 
+    .table-title {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(6, 182, 212, .15);
+      font-weight: 600;
+      color: #22d3ee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -146,36 +182,93 @@
 
     th,
     td {
-      padding: 14px 16px;
+      padding: 13px 16px;
       border-bottom: 1px solid rgba(6, 182, 212, .1);
+      font-size: .88rem;
     }
 
     th {
       background: rgba(30, 41, 59, .7);
       color: #94a3b8;
       text-align: left;
+      text-transform: uppercase;
+      font-size: .75rem;
+      letter-spacing: .04em;
     }
 
     tr:hover {
       background: rgba(6, 182, 212, .05);
     }
 
-    button {
-      padding: 6px 12px;
+    .risk-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    .risk-low {
+      background: rgba(16, 185, 129, .15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .3);
+    }
+
+    .risk-med {
+      background: rgba(245, 158, 11, .15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, .3);
+    }
+
+    .risk-high {
+      background: rgba(239, 68, 68, .15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
+
+    .btn-action {
+      padding: 5px 10px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
+      font-size: .8rem;
+      transition: .2s;
     }
 
-    .block {
+    .btn-block {
+      background: rgba(239, 68, 68, .2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
+
+    .btn-allow {
+      background: rgba(16, 185, 129, .2);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .3);
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: .2s;
+    }
+
+    .btn-block:hover {
       background: #ef4444;
-      color: white;
+      color: #fff;
     }
 
-    .allow {
+    .btn-allow:hover {
       background: #10b981;
       color: #022c22;
+    }
+
+    .btn-delete:hover {
+      background: rgba(239, 68, 68, .15);
     }
 
     .footer {
@@ -195,7 +288,7 @@
       <i class="fas fa-shield-halved"></i>
       <h2>AI Cyber Shield</h2>
     </div>
-    <span>Admin</span>
+    <span id="adminLabel">Admin</span>
   </nav>
 
   <div class="main">
@@ -205,9 +298,14 @@
       <a href="/activity-logs"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
       <a href="/admin-dashboard" class="active"><i class="fas fa-user-lock"></i> Admin Panel</a>
       <a href="/xai"><i class="fas fa-brain"></i> XAI Explanation</a>
-      <a href="/blocked-account"><i class="fas fa-ban"></i> Blocked Accounts</a>
-      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation</a>
+      <a href="/admin-blocked" class="admin-only"><i class="fas fa-ban"></i> Blocked Accounts</a>
+      <a href="/deviation"><i class="fas fa-chart-bar"></i> Deviation Analysis</a>
       <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+      <div class="sidebar-footer">
+        <div class="verified-badge">
+          <i class="fas fa-check-circle"></i> Verified Security
+        </div>
+      </div>
     </aside>
 
 
@@ -215,24 +313,24 @@
     <section class="content">
       <div class="header">
         <h1>Admin Security Control</h1>
-        <span>AI decisions & manual override</span>
+        <span>AI decisions &amp; manual override</span>
       </div>
 
       <!-- STATS -->
       <div class="stats">
         <div class="stat-card">
           <i class="fas fa-users"></i>
-          <h3>1,248</h3>
+          <h3 id="statUsers">—</h3>
           <p>Total Users</p>
         </div>
         <div class="stat-card">
           <i class="fas fa-triangle-exclamation"></i>
-          <h3>37</h3>
-          <p>Suspicious Users</p>
+          <h3 id="statSuspicious">—</h3>
+          <p>Suspicious / High Risk</p>
         </div>
         <div class="stat-card">
           <i class="fas fa-ban"></i>
-          <h3>12</h3>
+          <h3 id="statBlocked">—</h3>
           <p>Blocked Accounts</p>
         </div>
         <div class="stat-card">
@@ -244,13 +342,23 @@
 
       <!-- TABLE -->
       <div class="table-box">
+        <div class="table-title">
+          <span><i class="fas fa-shield-halved"></i> &nbsp;Threat Records</span>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span id="threatCount" style="font-size:.8rem;color:#94a3b8;"></span>
+            <button onclick="clearAllThreats()"
+              style="background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid #ef4444; padding:4px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer;">Clear
+              All Info</button>
+          </div>
+        </div>
         <table>
           <thead>
             <tr>
               <th>User</th>
-              <th>IP</th>
+              <th>IP Address</th>
               <th>Risk %</th>
-              <th>Reason</th>
+              <th>Risk Level</th>
+              <th>Reason / Detail</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -270,51 +378,102 @@
       localStorage.clear();
       window.location.href = "/";
     }
-    // ----- Role-based Access: Only Admin -----
-    let role = localStorage.getItem('role'); // 'user' or 'admin'
-    if (role !== 'admin') {
-      alert("Access Denied. Only admins can view this page.");
-      window.location.href = '/dashboard'; // redirect non-admins
+
+    // ── Auth Guard ──
+    const savedRole = localStorage.getItem("role");
+    if (!savedRole) {
+      window.location.href = "/";
     }
 
-    // ----- Backend URL -----
+    // Hide admin-only links if not admin
+    if (savedRole !== "admin") {
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+      // Also redirect if they shouldn't be here
+      window.location.href = "/dashboard";
+    }
+
     const BASE_URL = "/api";
 
-    // ----- Load Threat Data from Backend -----
+    // Load stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${BASE_URL}/admin/dashboard`, {
+          headers: { "Authorization": localStorage.getItem("token") }
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          if (res.status === 403 && errData.status === "blocked") {
+            sessionStorage.setItem("block_info", JSON.stringify(errData));
+            window.location.href = "/blocked-account";
+            return;
+          }
+          console.error("Stats fetch failed with status:", res.status);
+          if (res.status === 401 || res.status === 403) {
+            alert("Session expired or unauthorized. Please login again.");
+            window.location.href = "/";
+          }
+          return;
+        }
+        const d = await res.json();
+        document.getElementById("statUsers").textContent = d.users ?? "—";
+        document.getElementById("statSuspicious").textContent = d.threats ?? "—";
+        document.getElementById("statBlocked").textContent = d.blocked ?? "—";
+      } catch (e) { console.error(e); }
+    }
+
+    // Determine risk badge class and label based on risk score
+    function riskLabel(score) {
+      if (score >= 70) return { cls: "risk-high", label: "🔴 High Risk" };
+      if (score >= 40) return { cls: "risk-med", label: "🟡 Medium Risk" };
+      return { cls: "risk-low", label: "🟢 Low Risk" };
+    }
+
+    // Load Threat Data from Backend
     async function loadThreats() {
       const tbody = document.getElementById("adminTable");
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8">Loading data...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8">Loading data...</td></tr>`;
 
       try {
-        const response = await fetch(`${BASE_URL}/admin-threats`);
-        if (!response.ok) throw new Error("Failed to fetch threat data");
+        const response = await fetch(`${BASE_URL}/admin-threats`, {
+          headers: { "Authorization": localStorage.getItem("token") }
+        });
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            alert("Unauthorized. Redirecting to login.");
+            window.location.href = "/";
+          }
+          throw new Error("Failed to fetch threat data (Status: " + response.status + ")");
+        }
         const threats = await response.json();
 
-        // Populate table
+        document.getElementById("threatCount").textContent = `${threats.length} records`;
+
         if (threats.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8">No threats detected</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8">No threats detected — system is secure ✔</td></tr>`;
           return;
         }
 
         tbody.innerHTML = "";
         threats.forEach(t => {
+          const risk = riskLabel(t.risk || 0);
           tbody.innerHTML += `
         <tr>
-          <td>${t.user}</td>
-          <td>${t.ip}</td>
-          <td>${t.risk}%</td>
-          <td>${t.reason}</td>
-          <td>
-            <button class="block" onclick="updateUserStatus('${t.user}','block')">Block</button>
-            <button class="allow" onclick="updateUserStatus('${t.user}','allow')">Allow</button>
-            <i class="fas fa-trash" style="color:#ef4444;cursor:pointer;margin-left:10px" onclick="deleteThreat(${t.threat_id})"></i>
+          <td><i class="fas fa-user" style="color:#94a3b8;margin-right:6px"></i>${t.user}</td>
+          <td>${t.ip || '—'}</td>
+          <td><strong>${t.risk ?? '—'}%</strong></td>
+          <td><span class="risk-badge ${risk.cls}">${risk.label}</span></td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.reason}">${t.reason || '—'}</td>
+          <td style="display:flex;gap:6px;align-items:center;">
+            <button class="btn-action btn-block"  onclick="updateUserStatus('${t.user}','block')"><i class="fas fa-ban"></i> Block</button>
+            <button class="btn-action btn-allow"  onclick="updateUserStatus('${t.user}','allow')"><i class="fas fa-check"></i> Allow</button>
+            <button class="btn-delete" onclick="deleteThreat('${t.threat_id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>
           </td>
         </tr>`;
         });
 
       } catch (err) {
         console.error(err);
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red">Error loading data</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red">Error loading data. Check backend connection.</td></tr>`;
       }
     }
 
@@ -323,39 +482,61 @@
       try {
         const res = await fetch("/api/delete-threat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem("token")
+          },
           body: JSON.stringify({ threat_id: id })
         });
         if (res.ok) {
-          alert("Threat record cleared");
           loadThreats();
+          loadStats();
         }
       } catch (err) {
         console.error(err);
       }
     }
 
-    // ----- Block/Allow User Function -----
+    async function clearAllThreats() {
+      if (!confirm("Are you sure you want to CLEAR ALL threat records? This action cannot be undone.")) return;
+      try {
+        const res = await fetch("/api/clear-all-threats", {
+          method: "POST",
+          headers: {
+            "Authorization": localStorage.getItem("token")
+          }
+        });
+        if (res.ok) {
+          alert("All records cleared.");
+          loadThreats();
+          loadStats();
+        }
+      } catch (e) { alert("Failed to clear."); }
+    }
+
+    // Block/Allow User
     async function updateUserStatus(user, action) {
       try {
         const response = await fetch(`${BASE_URL}/admin-update-user`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem("token")
+          },
           body: JSON.stringify({ user, action })
         });
         if (!response.ok) throw new Error("Failed to update user status");
         const result = await response.json();
         alert(result.message);
-
-        // Refresh table after action
         loadThreats();
+        loadStats();
       } catch (err) {
         console.error(err);
         alert("Error updating user status");
       }
     }
 
-    // Load threats on page load
+    loadStats();
     loadThreats();
   </script>
 </body>

@@ -6,7 +6,7 @@ pyjwt
 requests
 pytz
 numpy
-catboost
+catboostcd
 gunicorn
 pandas
 scikit-learn

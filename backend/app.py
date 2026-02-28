@@ -2,15 +2,25 @@
 
 from flask import Flask, render_template
 from flask_cors import CORS
-from backend.database import get_db
-from routes.auth_routes import auth_bp
-from routes.admin_routes import admin_bp
-from routes.monitoring_routes import monitoring_bp
-from routes.dashboard_routes import dashboard_bp
-from routes.register_routes import register_bp
-from routes.deviation_routes import deviation_bp
-from routes.fake_profile_routes import fake_profile_bp
 
+try:
+    from backend.database import get_db
+    from backend.routes.auth_routes import auth_bp
+    from backend.routes.admin_routes import admin_bp
+    from backend.routes.monitoring_routes import monitoring_bp
+    from backend.routes.dashboard_routes import dashboard_bp
+    from backend.routes.register_routes import register_bp
+    from backend.routes.deviation_routes import deviation_bp
+    from backend.routes.fake_profile_routes import fake_profile_bp
+except ImportError:
+    from database import get_db
+    from routes.auth_routes import auth_bp
+    from routes.admin_routes import admin_bp
+    from routes.monitoring_routes import monitoring_bp
+    from routes.dashboard_routes import dashboard_bp
+    from routes.register_routes import register_bp
+    from routes.deviation_routes import deviation_bp
+    from routes.fake_profile_routes import fake_profile_bp
 app = Flask(
     __name__,
     template_folder="../frontend",

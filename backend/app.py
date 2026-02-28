@@ -2,7 +2,7 @@
 
 from flask import Flask, render_template
 from flask_cors import CORS
-from database import get_db
+from backend.database import get_db
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
 from routes.monitoring_routes import monitoring_bp

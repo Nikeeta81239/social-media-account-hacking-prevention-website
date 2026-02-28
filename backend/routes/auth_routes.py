@@ -4,7 +4,7 @@ import json
 import jwt
 from flask import Blueprint, request, jsonify
 from database import get_db
-from security.jwt_auth import generate_jwt
+from security.jwt_auth import generate_jwt, token_required
 from security.password_hashing import check_password, hash_password
 from utils.otp_service import generate_otp, verify_otp
 from utils.email_service import send_otp_email, send_security_alert
@@ -48,14 +48,22 @@ def login():
     
     try:
         # Module 2: Capture device, location, and IP info (from frontend or request)
-        device = data.get("device", "Unknown Device")
-        location = data.get("location", "Unknown Location")
-        ip = data.get("ip", request.remote_addr)
+        # Truncate to safe DB lengths to prevent VARCHAR overflow 500 errors
+        device   = (data.get("device",   "Unknown Device")  or "Unknown Device")[:200]
+        location = (data.get("location", "Unknown Location") or "Unknown Location")[:100]
+        ip       = (data.get("ip", request.remote_addr) or request.remote_addr or "0.0.0.0")[:50]
+
+        # ── Capture server-side UTC timestamp at the exact moment of login ──
+        login_timestamp_utc = datetime.datetime.utcnow()
+        login_time_str = login_timestamp_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
+        
+        print(f"[DEBUG] Login attempt for: {email} | Domain: {role}")
 
         db = get_db()
         cur = db.cursor(dictionary=True)
 
         # Module 1: Get user
+        print("[DEBUG] Module 1: Fetching user...")
         cur.execute("SELECT * FROM users WHERE email=%s AND role=%s", (email, role))
         user = cur.fetchone()
 
@@ -66,63 +74,112 @@ def login():
 
         user_id = user["id"]
         
-        # ── ADMIN BYPASS ──
+        # ── ADMIN / DEVELOPER BYPASS — No AI analysis for authority roles ──
         if user['role'] == 'admin':
             if check_password(password, user["password"]):
+                # Authority Access: No behavioral analysis, no logs, direct entry.
                 token = generate_jwt(user_id, user["role"])
                 cur.execute("UPDATE users SET failed_attempts=0 WHERE id=%s", (user_id,))
                 db.commit()
                 cur.close()
                 db.close()
                 return jsonify({
-                    "status": "success",
-                    "token": token,
-                    "role": user["role"],
-                    "user_id": user_id,
-                    "message": "Welcome, Administrator. Full access granted."
+                    "status":   "success",
+                    "token":    token,
+                    "role":     user["role"],
+                    "user_id":  user_id,
+                    "message":  "Security Authority Access: System Developer Authorized."
                 }), 200
-        
-        current_attempts = user.get("failed_attempts", 0)
-        
-        # Check if user is currently blocked
+            else:
+                # Wrong password — reject immediately, no AI fallthrough
+                new_attempts = user.get("failed_attempts", 0) + 1
+                cur.execute("UPDATE users SET failed_attempts=%s WHERE id=%s", (new_attempts, user_id))
+                db.commit()
+                cur.close()
+                db.close()
+                return jsonify({
+                    "status":  "failed",
+                    "message": f"Invalid admin credentials. Attempt {new_attempts}/5."
+                }), 401
+
+        # Module 2: Block Status Check
+        print("[DEBUG] Module 2: Checking block status...")
         cur.execute("SELECT * FROM blocked_users WHERE user_id=%s ORDER BY blocked_time DESC LIMIT 1", (user_id,))
         blocked_entry = cur.fetchone()
 
         is_currently_blocked = False
-        time_left = 30 # Default
+        time_left = 30 
         if blocked_entry:
             blocked_time = blocked_entry['blocked_time']
-            diff = (datetime.datetime.now() - blocked_time).total_seconds()
+            diff = (datetime.datetime.utcnow() - blocked_time).total_seconds()
             if diff < 30:
                 is_currently_blocked = True
                 time_left = 30 - int(diff)
+        
+        has_expired_block = (blocked_entry and not is_currently_blocked)
+        print(f"[DEBUG] Block check: is_blocked={is_currently_blocked}, recovery={has_expired_block}")
 
-        # Module 1: Password check
+        # ── 🔴 ACTIVE BLOCK CHECK ──
+        # If user is currently within their 30s block, reject immediately WITHOUT incrementing attempts
+        if is_currently_blocked:
+            cur.close()
+            db.close()
+            return jsonify({
+                "status": "blocked",
+                "message": f"⚠ Access Restricted. Your account is temporarily locked for {time_left} more seconds.",
+                "reason": blocked_entry.get('reason', 'Security Policy Violation: Account blocked due to suspicious activity.'),
+                "time_left": time_left
+            }), 403
+
+        # Module 3: Password check
         is_password_correct = check_password(password, user["password"])
+        current_attempts = user.get("failed_attempts", 0)
         
         # --- WRONG PASSWORD HANDLING ---
         if not is_password_correct:
             new_attempts = current_attempts + 1
+            if has_expired_block:
+                 new_attempts = 1 
+            
             cur.execute("UPDATE users SET failed_attempts=%s WHERE id=%s", (new_attempts, user_id))
             db.commit()
-
-            if is_currently_blocked:
-                cur.close()
-                db.close()
-                return jsonify({
-                    "status": "blocked",
-                    "message": f"⚠ Access Restricted. Your account is temporarily blocked for suspicious activity.",
-                    "time_left": time_left
-                }), 403
-
+            
+            # ── LOG THE BEHAVIOR: Wrong Password ──
+            status_to_log = "failed"
+            risk_to_log = "low"
+            if new_attempts >= 3:
+                risk_to_log = "medium"
             if new_attempts >= 5:
-                cur.execute("INSERT INTO blocked_users (user_id, reason) VALUES (%s, %s)", (user_id, "Max failed attempts reached"))
+                status_to_log = "blocked"
+                risk_to_log = "high"
+
+            reason_text = f"Incorrect password. Attempt {new_attempts}/5."
+            if has_expired_block:
+                 reason_text += " [Post-Block Recovery Attempt]"
+
+            try:
+                cur.execute("""
+                    INSERT INTO login_logs (user_id, ip_address, location, device, status, risk, behavior_reason)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (user_id, ip, location, device, status_to_log, risk_to_log, reason_text))
+                db.commit()
+            except Exception as log_err:
+                print(f"[DATABASE ERROR] Log insertion failed: {log_err}")
+                db.rollback()
+
+            print(f"[SECURITY] User {user_id} failed password. Attempt: {new_attempts}/5.")
+
+            # ── 5th+ FAILED ATTEMPT: BLOCK ──
+            if new_attempts >= 5:
+                block_reason = "Security Alert: Account locked due to 5 consecutive failed password attempts. This is a protective measure against brute-force attacks."
+                cur.execute("INSERT INTO blocked_users (user_id, reason) VALUES (%s, %s)", (user_id, block_reason[:255]))
                 db.commit()
                 cur.close()
                 db.close()
                 return jsonify({
                     "status": "blocked", 
-                    "message": "⚠ Account Blocked. Excessive failed attempts detected. Access restricted for 30 seconds.",
+                    "message": "⚠ Account Blocked. Excessive failed attempts detected (5/5). Access restricted for 30 seconds.",
+                    "reason": block_reason,
                     "time_left": 30
                 }), 403
             
@@ -133,44 +190,73 @@ def login():
         # --- CORRECT PASSWORD HANDLING ---
         
         # Module 3: Feature Extraction & Risk Prediction
+        print("[DEBUG] Extracting features...")
         features = extract_features(user_id, device, location, ip)
         features["failed_attempts"] = current_attempts
+        print("[DEBUG] Predicting risk...")
         risk_result = predict_risk(features)
         risk_score = risk_result["score"]
         
+        # ── APPLY SEQUENCE-BASED RISK OVERRIDES ──
+        # This ensures the 3rd, 4th, and 5th attempts (correct password) always hit OTP.
+        if 2 <= current_attempts <= 4:
+            risk_score = 55
+            behavior_type = f"Mid-Sequence Identity Verification (Attempt {current_attempts + 1}/5)"
+            print(f"[SECURITY] Forcing OTP for attempt {current_attempts + 1} (correct password).")
+        elif has_expired_block:
+            # Recovery after block: Medium risk -> OTP. Full access restored after verification.
+            risk_score = max(risk_score, 45)
+            behavior_type = "Post-Block Recovery"
+            print(f"[SECURITY] Post-block Recovery triggered for user {user_id}")
+        elif current_attempts in [0, 1]:
+            # 1st or 2nd attempt success: Low risk -> Direct Access
+            risk_score = min(risk_score, 30)
+            behavior_type = "Trust Verification (Attempt 1-2)"
+
         # Module 4: Explainable AI
+        print(f"[DEBUG] Generating XAI (Score: {risk_score})...")
         xai_data = generate_xai_explanation(risk_score, features)
+        # Add behavior analysis to XAI
+        xai_data["reason"] = f"[{behavior_type}] {xai_data['reason']}"
+        
         cur.execute("""
             INSERT INTO xai_explanations 
             (user_id, event_type, risk_score, decision, top_reasons, what_if, trust_score)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (user_id, "LOGIN_ATTEMPT", risk_score, xai_data["decision"], 
+        """, (user_id, "LOGIN_ATTEMPT", risk_score, xai_data["decision"],
               json.dumps({
-                  "reason": xai_data["reason"],
+                  "reason":           xai_data["reason"],
+                  "lime_user_prompt": xai_data["lime_user_prompt"],
+                  "lime_plain_reasons": xai_data["lime_plain_reasons"],
                   "suggested_action": xai_data["suggested_action"],
                   "dynamic_analysis": xai_data["dynamic_analysis"],
-                  "feature_weights": xai_data["feature_weights"]
+                  "feature_weights":  xai_data["feature_weights"],
+                  "contributions":    xai_data["contributions"],
+                  "login_time_utc":   xai_data["login_time_utc"],
+                  "login_location":   xai_data.get("login_location", location),
+                  "login_device":     xai_data.get("login_device", device),
+                  "failed_ever":      xai_data.get("failed_ever", 0),
+                  "freq_24h":         xai_data.get("freq_24h", 0),
               }), xai_data["what_if"], xai_data["trust_score"]))
         db.commit()
 
         # --- HIGH RISK (>= 70%) or ACTIVE BLOCK ---
-        # If currently blocked (within 30s), reject immediately.
-        # If NOT currently blocked but high risk, block ONLY if NOT in recovery mode.
-        has_expired_block = (blocked_entry and not is_currently_blocked)
-        
         if is_currently_blocked or (risk_score >= 70 and not has_expired_block):
-            # If this is a FRESH high risk login (not recovery), insert a new block
             if not is_currently_blocked and risk_score >= 70:
+                 block_reason = f"High Risk Incident: {xai_data['reason']}"[:255]
                  cur.execute("INSERT INTO blocked_users (user_id, reason) VALUES (%s, %s)", 
-                            (user_id, f"High Risk Incident: {xai_data['reason'][:100]}"))
+                            (user_id, block_reason))
                  db.commit()
             
-            # Log the blocked attempt
-            cur.execute("""
-                INSERT INTO login_logs (user_id, ip_address, location, device, status, risk)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (user_id, ip, location, device, "Blocked", "high"))
-            db.commit()
+            try:
+                cur.execute("""
+                    INSERT INTO login_logs (user_id, ip_address, location, device, status, risk, behavior_reason)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (user_id, ip, location, device, "Blocked", "high", f"Critical Risk Source: {xai_data['reason']}"))
+                db.commit()
+            except Exception as log_err:
+                print(f"[DATABASE ERROR] Block log failed: {log_err}")
+                db.rollback()
             
             cur.close()
             db.close()
@@ -183,18 +269,24 @@ def login():
                 "xai": xai_data
             }), 403
 
-        # --- RECOVERY or MEDIUM RISK (OTP REQUIRED) ---
-        # We reach here if:
-        # 1. Risk is medium (31-69)
-        # 2. Risk is high (>=70) but the user's 30s block just EXPIRED (Recovery Mode)
+        # --- RECOVERY or MEDIUM RISK (31-69%) ---
         if risk_score >= 31 or has_expired_block:
             otp = generate_otp(user_id)
-            if send_otp_email(email, otp):
-                cur.execute("""
-                    INSERT INTO login_logs (user_id, ip_address, location, device, status, risk)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, (user_id, ip, location, device, "otp_pending", "medium"))
-                db.commit()
+            if send_otp_email(user["email"], otp):
+                behavior_msg = xai_data["reason"]
+                if has_expired_block:
+                    behavior_msg = "Security Escalation: Block expired. OTP required for identity verification."
+
+                try:
+                    cur.execute("""
+                        INSERT INTO login_logs (user_id, ip_address, location, device, status, risk, behavior_reason)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (user_id, ip, location, device, "otp_pending", "medium", behavior_msg))
+                    db.commit()
+                except Exception as log_err:
+                    print(f"[DATABASE ERROR] OTP log failed: {log_err}")
+                    db.rollback()
+                
                 cur.close()
                 db.close()
                 return jsonify({
@@ -205,6 +297,13 @@ def login():
                     "reason": xai_data["reason"],
                     "xai": xai_data
                 }), 200
+            else:
+                cur.close()
+                db.close()
+                return jsonify({
+                    "status": "error",
+                    "message": "Security System Error: Could not send verification code."
+                }), 500
 
         # --- NORMAL RISK (< 31%) ---
         cur.execute("UPDATE users SET failed_attempts=0 WHERE id=%s", (user_id,))
@@ -212,14 +311,14 @@ def login():
         
         token = generate_jwt(user_id, user["role"])
         cur.execute("""
-            INSERT INTO login_logs (user_id, ip_address, location, device, status, risk)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (user_id, ip, location, device, "success", "low"))
+            INSERT INTO login_logs (user_id, ip_address, location, device, status, risk, behavior_reason)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (user_id, ip, location, device, "success", "low", "Login pattern verified & trusted."))
         db.commit()
         cur.close()
         db.close()
         return jsonify({
-            "verified": True, 
+            "status": "success", 
             "token": token, 
             "role": user["role"], 
             "user_id": user_id,
@@ -227,7 +326,9 @@ def login():
         }), 200
 
     except Exception as e:
+        import traceback
         print(f"CRITICAL LOGIN ERROR: {e}")
+        traceback.print_exc()
         return jsonify({
             "status": "error",
             "message": f"Server encountered an error during login: {str(e)}"
@@ -404,7 +505,7 @@ def deny_reset():
         user_id = user["id"]
         # 1. Block the account immediately (Security Action)
         cur.execute("INSERT INTO blocked_users (user_id, reason) VALUES (%s, %s)", 
-                   (user_id, "User flagged unauthorized login (Secure My Account)"))
+                   (user_id, "Security Lockdown: User manually flagged an unauthorized login attempt. Identity verification required."))
         
         # 2. Generate and Send OTP for Recovery
         otp = generate_otp(user_id)
@@ -482,13 +583,17 @@ def verify_user_otp():
         db.close()
         return jsonify({"verified": False, "message": message}), 400
 
-    token = generate_jwt(user_id, user["role"])
+    # UNBLOCK user upon successful OTP verification (Identity Recovery)
+    cur.execute("SELECT id FROM blocked_users WHERE user_id=%s", (user_id,))
+    was_blocked = cur.fetchone() is not None
+    if was_blocked:
+        cur.execute("DELETE FROM blocked_users WHERE user_id=%s", (user_id,))
 
     # Reset failed_attempts
     cur.execute("UPDATE users SET failed_attempts=0 WHERE id=%s", (user_id,))
     
-    # UNBLOCK user upon successful OTP verification (Identity Recovery)
-    cur.execute("DELETE FROM blocked_users WHERE user_id=%s", (user_id,))
+    # Generate token (restricted if unblocking to enforce XAI review)
+    token = generate_jwt(user_id, user["role"], is_restricted=was_blocked)
 
     cur.execute("""
         UPDATE login_logs
@@ -510,12 +615,20 @@ def verify_user_otp():
         try:
             top_reasons = json.loads(xai_row["top_reasons"])
             xai_data = {
-                "decision": xai_row["decision"],
-                "risk_score": xai_row["risk_score"],
-                "reason": top_reasons.get("reason"),
-                "suggested_action": top_reasons.get("suggested_action"),
-                "dynamic_analysis": top_reasons.get("dynamic_analysis"),
-                "trust_score": xai_row["trust_score"]
+                "decision":           xai_row["decision"],
+                "risk_score":         xai_row["risk_score"],
+                "reason":             top_reasons.get("reason"),
+                "lime_user_prompt":   top_reasons.get("lime_user_prompt"),
+                "lime_plain_reasons": top_reasons.get("lime_plain_reasons", []),
+                "suggested_action":   top_reasons.get("suggested_action"),
+                "dynamic_analysis":   top_reasons.get("dynamic_analysis"),
+                "login_time_utc":     top_reasons.get("login_time_utc"),
+                "trust_score":        xai_row["trust_score"],
+                "lime_msg":           top_reasons.get("lime_msg"),
+                "trust_msg":          top_reasons.get("trust_msg"),
+                "eli5_msg":           top_reasons.get("eli5_msg"),
+                "catboost_msg":       top_reasons.get("catboost_msg"),
+                "final_decision_msg": top_reasons.get("final_decision_msg")
             }
         except:
             xai_data = {"decision": xai_row["decision"], "risk_score": xai_row["risk_score"]}
@@ -523,13 +636,19 @@ def verify_user_otp():
     db.commit()
     cur.close()
     db.close()
+    
+    # Force XAI redirect if user was blocked OR if current login is very high risk
+    force_xai = was_blocked or (xai_data and xai_data.get("risk_score", 0) >= 70)
+
     return jsonify({
         "verified": True, 
-        "message": "Login successful", 
+        "message": "Login successful. Restricted access granted.", 
         "token": token, 
         "role": user["role"],
         "user_id": user_id,
-        "xai": xai_data
+        "xai": xai_data,
+        "is_restricted": was_blocked,
+        "redirect_to_xai": force_xai
     }), 200
 
 
@@ -560,3 +679,30 @@ def resend_user_otp():
         db.close()
         return jsonify({"message": "Failed to resend OTP"}), 500
 
+# ================= ADMIN: VIEW USER BEHAVIOR =================
+@auth_bp.route("/admin/user-behavior", methods=["GET"])
+@token_required()
+def get_user_behavior(current_user_id, role):
+    if role != 'admin':
+        return jsonify({"message": "Forbidden"}), 403
+        
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"message": "User ID required"}), 400
+        
+    db = get_db()
+    cur = db.cursor(dictionary=True)
+    
+    # Get latest login attempts and their XAI explanations
+    cur.execute("""
+        SELECT l.*, x.risk_score, x.decision, x.top_reasons 
+        FROM login_logs l
+        LEFT JOIN xai_explanations x ON l.user_id = x.user_id AND l.login_time = x.created_at
+        WHERE l.user_id = %s
+        ORDER BY l.login_time DESC LIMIT 10
+    """, (user_id,))
+    logs = cur.fetchall()
+    
+    cur.close()
+    db.close()
+    return jsonify({"logs": logs}), 200

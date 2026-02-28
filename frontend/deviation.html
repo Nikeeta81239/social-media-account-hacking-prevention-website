@@ -607,8 +607,10 @@
                 <div class="formula-legend"
                     style="margin-top:10px; border-top:1px solid rgba(6,182,212,0.1); padding-top:10px;">
                     <span style="color:#22d3ee; font-size:0.8rem;"><i class="fas fa-microchip"></i> <strong>AI
-                            Engine:</strong> These normalized deviation scores are fed directly into the
-                        <strong>CatBoost Classifier</strong> for real-time risk prediction.</span>
+                            Engine:</strong> These normalized deviation scores, integrated with <strong>Night Behavior
+                            Analysis</strong>
+                        (11 PM - 6 AM), are fed directly into the <strong>CatBoost Classifier</strong> for real-time
+                        risk prediction.</span>
                 </div>
             </div>
 
@@ -702,10 +704,18 @@
     </div>
 
     <script>
+        // --- REDIRECTS ---
+        const role = localStorage.getItem("role");
         // ── Auth Guard ──
         const savedRole = localStorage.getItem("role");
+        const isRestricted = localStorage.getItem("is_restricted") === "true";
+
         if (!savedRole) {
             window.location.href = "/";
+        }
+
+        if (isRestricted) {
+            window.location.href = "/xai";
         }
 
         // Hide admin-only links if not admin
@@ -804,10 +814,11 @@
             const tbody = document.getElementById("devTable");
             tbody.innerHTML = "";
             users.forEach((u, idx) => {
-                const barWidth = Math.min((u.std_deviation / 50) * 100, 100);
-                const badgeClass = u.risk_level.includes("Low") ? "badge-low" : u.risk_level.includes("Medium") ? "badge-medium" : "badge-high";
+                const isBlocked = u.is_blocked;
+                const barWidth = isBlocked ? 100 : Math.min((u.std_deviation / 50) * 100, 100);
+                const badgeClass = isBlocked ? "badge-high" : (u.risk_level.includes("Low") ? "badge-low" : u.risk_level.includes("Medium") ? "badge-medium" : "badge-high");
                 const varBadge = u.variance_category === "Stable" ? "badge-stable" : u.variance_category === "Moderate Variance" ? "badge-medium" : "badge-high";
-                const actionIcon = u.risk_level.includes("Low") ? "✅" : u.risk_level.includes("Medium") ? "🔐" : "🔒";
+                const actionIcon = isBlocked ? "🚫" : (u.risk_level.includes("Low") ? "✅" : u.risk_level.includes("Medium") ? "🔐" : "🔒");
 
                 tbody.innerHTML += `
             <tr>
@@ -820,9 +831,12 @@
                 <td>${u.max_score}</td>
                 <td><span class="badge ${varBadge}">${u.variance_category}</span></td>
                 <td><span class="badge ${badgeClass}">${u.risk_emoji} ${u.risk_level}</span></td>
-                <td style="font-size:.72rem; max-width:200px; color:#cbd5f5; line-height:1.3;">
-                    <i class="fas fa-brain" style="color:#22d3ee; font-size:0.75rem; margin-right:4px;"></i>
-                    ${u.latest_xai_reason}
+                <td style="font-size:.72rem; max-width:220px; line-height:1.4;">
+                    <i class="fas fa-brain" style="color:#22d3ee;font-size:.75rem;margin-right:4px;"></i>
+                    <span style="color:#e2e8f0;" title="${(u.latest_xai_reason || '').replace(/"/g, '&quot;')}">
+                      ${(u.latest_xai_reason || 'No AI data available').substring(0, 90)}${((u.latest_xai_reason || '').length > 90) ? '…' : ''}
+                    </span>
+                    ${u.xai_login_time ? `<div style="margin-top:4px;color:#64748b;font-size:.68rem;"><i class="fas fa-clock"></i> ${u.xai_login_time}</div>` : ''}
                 </td>
                 <td style="font-size:.82rem">${actionIcon} ${u.action_taken}</td>
                 <td style="min-width:80px">
@@ -897,7 +911,11 @@
             const ctx = document.getElementById("lineChart").getContext("2d");
             if (lineChartInstance) lineChartInstance.destroy();
 
-            const dataPoints = u.score_history.length > 0 ? u.score_history : [u.mean_score];
+            let dataPoints = u.score_history.length > 0 ? [...u.score_history] : [u.mean_score];
+            // If currently blocked, make sure the last point shows as the high risk trigger
+            if (u.is_blocked) {
+                dataPoints[dataPoints.length - 1] = 100;
+            }
             const labels = dataPoints.map((_, i) => `Login ${i + 1}`);
 
             lineChartInstance = new Chart(ctx, {
@@ -948,6 +966,14 @@
             const statusColor = u.comparison_status === "Suspicious" ? "#ef4444" : u.comparison_status === "Elevated" ? "#f59e0b" : "#10b981";
 
             box.innerHTML = `
+        ${u.is_blocked ? `
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:8px; padding:10px; margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-ban" style="color:#ef4444; font-size:1.2rem;"></i>
+            <div>
+                <b style="color:#ef4444; font-size:0.85rem;">ACCOUNT BLOCKED</b>
+                <p style="color:#94a3b8; font-size:0.7rem; margin:0;">Security cooldown in effect (30s).</p>
+            </div>
+        </div>` : ''}
         <div class="cmp-row">
             <span class="cmp-label">📊 Historical Mean</span>
             <span class="cmp-value">${u.historical_mean}</span>
@@ -991,7 +1017,7 @@
             const features = [
                 { label: "📍 Location Changes", count: fb.location_changes ?? 0, risk: fb.location_risk ?? 0, color: "#f59e0b", icon: "fa-map-marker-alt" },
                 { label: "💻 Device Mismatches", count: fb.device_mismatches ?? 0, risk: fb.device_risk ?? 0, color: "#ef4444", icon: "fa-laptop" },
-                { label: "🌙 Odd-Hour Logins", count: fb.odd_time_logins ?? 0, risk: fb.time_risk ?? 0, color: "#a855f7", icon: "fa-moon" }
+                { label: "🌙 Night Behavioral Activity", count: fb.night_logins ?? 0, risk: fb.time_risk ?? 0, color: "#a855f7", icon: "fa-moon" }
             ];
 
             let html = "";
@@ -1011,18 +1037,30 @@
 
             const total = fb.total_computed_risk ?? 0;
             const trColor = total >= 60 ? "#ef4444" : total >= 30 ? "#f59e0b" : "#10b981";
+
+            // Build a proper XAI explanation section with plain language
+            const xaiDecision = u.xai_decision || u.risk_level || "Low Risk";
+            const xaiScore = u.xai_risk_score !== null && u.xai_risk_score !== undefined ? u.xai_risk_score : u.mean_score;
+            const xaiTime = u.xai_login_time || "";
+            const xaiColor = xaiScore >= 70 ? "#ef4444" : xaiScore >= 31 ? "#f59e0b" : "#10b981";
+            const xaiIcon = xaiScore >= 70 ? "fa-triangle-exclamation" : xaiScore >= 31 ? "fa-shield" : "fa-check-circle";
+
             html += `
         <div style="margin-top:14px;padding:12px 14px;background:rgba(0,0,0,.25);border-radius:8px;border-left:3px solid ${trColor};">
             <span style="color:#94a3b8;font-size:.83rem;">Total Computed Risk Score</span>
             <span style="float:right;font-size:1.15rem;font-weight:700;color:${trColor}">${total}</span>
         </div>
-        <div style="margin-top:14px; padding:12px; background:rgba(6,182,212,0.05); border-radius:8px; border:1px solid rgba(6,182,212,0.1);">
-            <div style="color:#22d3ee; font-size:0.75rem; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
-                <i class="fas fa-robot"></i> CATBOOST PERSONALIZED XAI
+        <div style="margin-top:14px; padding:14px; background:rgba(6,182,212,0.05); border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <i class="fas fa-robot" style="color:#22d3ee;"></i>
+                <span style="color:#22d3ee; font-size:.78rem; font-weight:700;">CATBOOST PERSONALIZED XAI</span>
+                <span style="margin-left:auto; font-size:.75rem; font-weight:700; padding:3px 10px; border-radius:10px; background:rgba(${xaiScore >= 70 ? '239,68,68' : xaiScore >= 31 ? '245,158,11' : '16,185,129'},.15); color:${xaiColor};">${xaiDecision}</span>
             </div>
-            <div style="font-size:0.75rem; color:#cbd5f5; line-height:1.4;">
-                ${u.latest_xai_reason}
+            <div style="font-size:0.82rem; color:#e2e8f0; line-height:1.7; margin-bottom:10px;">
+                <i class="fas ${xaiIcon}" style="color:${xaiColor}; margin-right:6px;"></i>
+                ${u.latest_xai_reason || 'No AI explanation available for this user.'}
             </div>
+            ${xaiTime ? `<div style="font-size:.72rem; color:#64748b;"><i class="fas fa-clock"></i> Last analyzed: ${xaiTime}</div>` : ''}
         </div>`;
 
             box.innerHTML = html;

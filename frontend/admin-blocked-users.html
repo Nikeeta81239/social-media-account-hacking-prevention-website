@@ -267,6 +267,17 @@
 
         // Check if admin
         const savedRole = localStorage.getItem('role');
+        const isRestricted = localStorage.getItem("is_restricted") === "true";
+
+        if (!savedRole) {
+            window.location.href = "/";
+        }
+
+        // REQUIRMENT: Blocked accounts only access XAI
+        if (isRestricted) {
+            window.location.href = "/xai";
+        }
+
         if (savedRole !== 'admin') {
             window.location.href = '/dashboard';
         }

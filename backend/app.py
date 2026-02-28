@@ -48,7 +48,7 @@ def init_database():
         cur.execute("""CREATE TABLE IF NOT EXISTS blocked_users (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
-            reason VARCHAR(100),
+            reason VARCHAR(255),
             blocked_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )""")
@@ -58,12 +58,36 @@ def init_database():
             user_id INT,
             login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             ip_address VARCHAR(50),
-            location VARCHAR(50),
-            device VARCHAR(50),
-            status VARCHAR(20),
+            location VARCHAR(150),
+            device VARCHAR(255),
+            status VARCHAR(30),
             risk VARCHAR(10),
+            behavior_reason TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )""")
+
+        # Widen columns on existing databases (safe to run every time)
+        try:
+            cur.execute("ALTER TABLE login_logs MODIFY COLUMN device VARCHAR(255)")
+            cur.execute("ALTER TABLE login_logs MODIFY COLUMN location VARCHAR(150)")
+            cur.execute("ALTER TABLE login_logs MODIFY COLUMN status VARCHAR(30)")
+            cur.execute("ALTER TABLE blocked_users MODIFY COLUMN reason VARCHAR(255)")
+            
+            # Check if behavior_reason exists before adding it (safer for older MySQL)
+            cur.execute("""
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_NAME = 'login_logs' 
+                AND COLUMN_NAME = 'behavior_reason'
+                AND TABLE_SCHEMA = (SELECT DATABASE())
+            """)
+            if cur.fetchone()[0] == 0:
+                cur.execute("ALTER TABLE login_logs ADD COLUMN behavior_reason TEXT")
+                print("[DATABASE] Added 'behavior_reason' column to login_logs.")
+                
+        except Exception as e:
+            print(f"[DATABASE ERROR] Could not update schema: {str(e)}")
+            pass
+
 
         cur.execute("""CREATE TABLE IF NOT EXISTS attack_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,

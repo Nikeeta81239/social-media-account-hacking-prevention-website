@@ -308,6 +308,7 @@
               <th>Location</th>
               <th>Device</th>
               <th>Status</th>
+              <th>Reason</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -332,8 +333,15 @@
 
     // ── Auth Guard ──
     const savedRole = localStorage.getItem("role");
+    const isRestricted = localStorage.getItem("is_restricted") === "true";
+
     if (!savedRole) {
       window.location.href = "/";
+    }
+
+    // REQUIRMENT: Blocked accounts only access XAI
+    if (isRestricted) {
+      window.location.href = "/xai";
     }
 
     // Hide admin-only links if not admin
@@ -400,6 +408,7 @@
         <td>${l.loc || '—'}</td>
         <td>${l.dev || '—'}</td>
         <td><span class="badge ${cls}">${l.status}</span></td>
+        <td style="font-size: 0.75rem; color: #94a3b8; max-width: 250px;">${l.behavior_reason || '—'}</td>
         <td>
           <button class="btn-delete" onclick="deleteLog(${l.log_id})" title="Delete log">
             <i class="fas fa-trash-alt"></i>

@@ -73,7 +73,7 @@ def dashboard_data(user_id, role):
         SELECT id as log_id, login_time as time, ip_address as ip, 
                COALESCE(location, 'Unknown') as loc,
                COALESCE(device, 'Unknown') as dev, 
-               status
+               status, behavior_reason
         FROM login_logs
         WHERE user_id=%s
         ORDER BY id DESC
@@ -132,7 +132,7 @@ def activity_logs(current_user_id, current_role):
             SELECT l.id as log_id, l.login_time as time, l.ip_address as ip,
                    COALESCE(l.location, 'Unknown') as loc,
                    COALESCE(l.device, 'Unknown') as dev,
-                   l.status,
+                   l.status, l.behavior_reason,
                    u.email as user_email
             FROM login_logs l
             JOIN users u ON l.user_id = u.id
@@ -145,7 +145,7 @@ def activity_logs(current_user_id, current_role):
             SELECT l.id as log_id, l.login_time as time, l.ip_address as ip,
                    COALESCE(l.location, 'Unknown') as loc,
                    COALESCE(l.device, 'Unknown') as dev,
-                   l.status,
+                   l.status, l.behavior_reason,
                    u.email as user_email
             FROM login_logs l
             JOIN users u ON l.user_id = u.id

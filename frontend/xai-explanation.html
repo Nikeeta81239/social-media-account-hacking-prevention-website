@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>XAI Explanation | AI Cyber Shield</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Cyber Shield — Explainable AI behavioral security analysis for your login.">
 
   <!-- Fonts & Icons -->
   <link
@@ -36,7 +37,7 @@
       z-index: -1;
     }
 
-    /* NAVBAR */
+    /* ── NAVBAR ── */
     .navbar {
       background: rgba(15, 23, 42, .9);
       padding: 15px 30px;
@@ -60,7 +61,7 @@
       -webkit-text-fill-color: transparent;
     }
 
-    /* LAYOUT */
+    /* ── LAYOUT ── */
     .main {
       display: grid;
       grid-template-columns: 240px 1fr;
@@ -70,6 +71,9 @@
       background: rgba(15, 23, 42, .8);
       padding: 25px;
       border-right: 1px solid rgba(6, 182, 212, .2);
+      min-height: calc(100vh - 65px);
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar a {
@@ -81,6 +85,7 @@
       color: #94a3b8;
       text-decoration: none;
       border-radius: 8px;
+      transition: .2s;
     }
 
     .sidebar a:hover,
@@ -89,9 +94,10 @@
       color: #06b6d4;
     }
 
-    /* CONTENT */
+    /* ── CONTENT ── */
     .content {
       padding: 30px;
+      overflow-y: auto;
     }
 
     .header {
@@ -101,57 +107,256 @@
       margin-bottom: 25px;
     }
 
-    /* BOXES */
+    /* ── STATUS BADGE ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .badge-safe {
+      background: rgba(16, 185, 129, .15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .3);
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, .3);
+    }
+
+    .badge-alert {
+      background: rgba(239, 68, 68, .15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
+
+    /* ── BOX ── */
     .box {
       background: rgba(15, 23, 42, .85);
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid rgba(6, 182, 212, .2);
-      padding: 20px;
-      margin-bottom: 25px;
+      padding: 24px;
+      margin-bottom: 22px;
     }
 
     .box h3 {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       color: #22d3ee;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .box p {
-      color: #cbd5f5;
+    /* ── FRIENDLY EXPLANATION BOX ── */
+    .explanation-card {
+      background: rgba(6, 182, 212, .04);
+      border: 1px solid rgba(6, 182, 212, .25);
+      border-left: 4px solid #06b6d4;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 22px;
+    }
+
+    .explanation-card.safe {
+      border-left-color: #10b981;
+      background: rgba(16, 185, 129, .04);
+    }
+
+    .explanation-card.medium {
+      border-left-color: #f59e0b;
+      background: rgba(245, 158, 11, .04);
+    }
+
+    .explanation-card.alert {
+      border-left-color: #ef4444;
+      background: rgba(239, 68, 68, .04);
+    }
+
+    .explanation-card h3 {
+      color: #22d3ee;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+
+    .explanation-card p {
+      color: #e2e8f0;
+      line-height: 1.8;
       font-size: .95rem;
+    }
+
+    /* ── LIME REASONS ── */
+    .lime-reason-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(6, 182, 212, .08);
+    }
+
+    .lime-reason-item:last-child {
+      border-bottom: none;
+    }
+
+    .lime-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .85rem;
+    }
+
+    .lime-icon.safe {
+      background: rgba(16, 185, 129, .15);
+      color: #10b981;
+    }
+
+    .lime-icon.alert {
+      background: rgba(239, 68, 68, .15);
+      color: #ef4444;
+    }
+
+    .lime-icon.neutral {
+      background: rgba(245, 158, 11, .10);
+      color: #f59e0b;
+    }
+
+    .lime-text {
+      color: #cbd5e1;
+      font-size: .9rem;
       line-height: 1.6;
     }
 
-    /* LIST */
-    .reason-list li {
-      margin-bottom: 8px;
-      padding-left: 10px;
+    /* ── TRUST SCORE ── */
+    .trust-bar-wrap {
+      margin-top: 16px;
+      background: rgba(2, 6, 23, .5);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(6, 182, 212, .1);
     }
 
-    /* BADGES */
-    .badge {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: .75rem;
+    .trust-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .trust-label {
+      font-weight: 700;
+      color: #06b6d4;
+      font-size: 1rem;
+    }
+
+    .trust-pct {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .bar-track {
+      height: 12px;
+      background: rgba(30, 41, 59, .8);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      transition: width 1.5s cubic-bezier(0.1, 0, 0.3, 1);
+      border-radius: 6px;
+    }
+
+    .bar-threshold {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 100%;
+      background: rgba(239, 68, 68, .5);
+    }
+
+    /* ── LOGIN TIMESTAMP INFO ── */
+    .timestamp-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(6, 182, 212, .04);
+      border: 1px solid rgba(6, 182, 212, .15);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .timestamp-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-right: 24px;
+    }
+
+    .ts-label {
+      font-size: .72rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .ts-value {
+      font-size: .92rem;
       font-weight: 600;
+      color: #22d3ee;
     }
 
-    .fake {
-      background: #ef4444;
-      color: #2b0202;
+    /* ── ADMIN PANEL ── */
+    .admin-box {
+      border-color: #ef4444;
     }
 
-    .genuine {
-      background: #10b981;
-      color: #022c22;
+    .admin-detail {
+      background: rgba(2, 6, 23, .4);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: .82rem;
+      color: #94a3b8;
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      border: 1px solid rgba(6, 182, 212, .1);
+      margin-top: 14px;
     }
 
-    /* FOOTER */
+    .admin-detail span {
+      color: #22d3ee;
+    }
+
+    /* ── WHAT-IF ── */
+    .whatif-box {
+      background: rgba(6, 182, 212, .04);
+      border-left: 3px solid #06b6d4;
+      border-radius: 8px;
+      padding: 16px 20px;
+      color: #94a3b8;
+      font-size: .88rem;
+      line-height: 1.7;
+    }
+
+    /* ── FOOTER ── */
     .footer {
       text-align: center;
       margin-top: 30px;
-      color: #94a3b8;
-      font-size: .85rem;
+      color: #475569;
+      font-size: .82rem;
     }
   </style>
 </head>
@@ -164,7 +369,7 @@
       <i class="fas fa-shield-halved"></i>
       <h2>AI Cyber Shield</h2>
     </div>
-    <span>XAI Module</span>
+    <span style="color:#94a3b8;font-size:.9rem;">Explainable AI Module</span>
   </nav>
 
   <div class="main">
@@ -179,131 +384,250 @@
       <a href="/" onclick="localStorage.clear()"><i class="fas fa-right-from-bracket"></i> Logout</a>
     </aside>
 
-
     <section class="content">
 
+      <!-- Restricted Access Banner -->
+      <div id="restrictionBanner"
+        style="display:none; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); padding:20px; border-radius:12px; margin-bottom:25px; align-items:center; gap:15px;">
+        <i class="fas fa-shield-virus" style="color:#ef4444; font-size:2rem;"></i>
+        <div>
+          <h4 style="color:#ef4444; margin-bottom:4px;">Security Restricted Mode</h4>
+          <p style="color:#94a3b8; font-size:0.85rem;">Due to a past security event or block recovery, your access is
+            currently limited to this security report. To resume full access, please contact your administrator or
+            restart your session later.</p>
+        </div>
+      </div>
+
+      <!-- Admin User Picker -->
+      <div id="adminUserPicker"
+        style="display:none; background:rgba(6,182,212,0.05); border:1px solid rgba(6,182,212,0.15); padding:15px 20px; border-radius:12px; margin-bottom:25px; align-items:center; gap:15px;">
+        <i class="fas fa-users-viewfinder" style="color:#22d3ee; font-size:1.4rem;"></i>
+        <div style="flex:1">
+          <label style="color:#94a3b8; font-size:0.75rem; display:block; margin-bottom:4px;">Switch User Security
+            Profile:</label>
+          <select id="userSelector" onchange="switchTargetUser()"
+            style="width:100%; max-width:400px; background:#0f172a; border:1px solid rgba(6,182,212,0.3); color:#f1f5f9; padding:8px 12px; border-radius:8px; font-size:0.9rem; outline:none;">
+            <option value="">— Select a User —</option>
+          </select>
+        </div>
+        <div style="text-align:right">
+          <span style="display:block; font-size:0.65rem; color:#64748b;">ADMIN TOOL</span>
+          <span style="font-size:0.75rem; color:#10b981; font-weight:700;">LIVE PROFILE SYNC</span>
+        </div>
+      </div>
+
       <div class="header">
-        <h1>Explainable AI Decision</h1>
+        <h1>AI Security Decision</h1>
         <span id="finalDecision" class="badge">Loading...</span>
       </div>
 
-      <!-- MODEL INFO -->
+      <!-- ① LOGIN TIMESTAMP INFO -->
+      <div class="timestamp-card" id="timestampCard" style="display:none;">
+        <i class="fas fa-clock" style="color:#06b6d4;font-size:1.2rem;"></i>
+        <div class="timestamp-item">
+          <span class="ts-label">Login Timestamp (UTC)</span>
+          <span class="ts-value" id="tsLoginTime">—</span>
+        </div>
+        <div class="timestamp-item">
+          <span class="ts-label">Location</span>
+          <span class="ts-value" id="tsLocation">—</span>
+        </div>
+        <div class="timestamp-item">
+          <span class="ts-label">Device</span>
+          <span class="ts-value" id="tsDevice">—</span>
+        </div>
+        <div class="timestamp-item">
+          <span class="ts-label">AI Decision</span>
+          <span class="ts-value" id="tsDecision">—</span>
+        </div>
+      </div>
+
+      <!-- ② PLAIN-LANGUAGE MAIN EXPLANATION (User-Friendly) -->
+      <div class="explanation-card" id="mainExplanationCard">
+        <h3><i class="fas fa-shield-halved"></i> What Our Security AI Found</h3>
+        <p id="mainExplanationText">Analyzing your login behavior, please wait...</p>
+      </div>
+
+      <!-- ③ LIME – BEHAVIORAL FACTORS (Plain Language) -->
       <div class="box">
-        <h3>🤖 Model Used</h3>
-        <p>
-          This system uses a <b>CatBoost Classifier</b> trained on multiple
-          social media datasets. It captures feature dependency and complex
-          behavior patterns for detecting fake or bot accounts.
+        <h3><i class="fas fa-magnifying-glass-chart"></i> Why This Decision Was Made</h3>
+        <p style="color:#64748b; font-size:.85rem; margin-bottom:16px;">
+          Our AI analyzed your login behavior across 3 key security factors:
         </p>
-      </div>
-
-      <!-- LIME EXPLANATION -->
-      <div class="box">
-        <h3>🔍 LIME – Local Explanation</h3>
-        <p>Why this specific account was classified:</p>
-        <ul class="reason-list" id="limeReasons">
-          <li>Loading explanation...</li>
-        </ul>
-      </div>
-
-      <!-- TRUST SCORE GAUGE -->
-      <div class="box">
-        <h3>🛡️ Behavior Trust Score</h3>
-        <p>Based on behavioral patterns, the model calculates a current trust rating:</p>
-        <div
-          style="margin-top:20px; background:rgba(2,6,23,.5); border-radius:12px; padding:20px; border:1px solid rgba(6,182,212,.1);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span id="trustLabel" style="font-weight:700; color:#06b6d4;">Calculating...</span>
-            <span id="trustPercent" style="font-size:1.5rem; font-weight:700; color:#f1f5f9;">0%</span>
+        <div id="limeReasons">
+          <div class="lime-reason-item">
+            <div class="lime-icon neutral"><i class="fas fa-spinner fa-spin"></i></div>
+            <div class="lime-text">Analyzing behavioral patterns...</div>
           </div>
-          <div
-            style="height:12px; background:rgba(30,41,59,.8); border-radius:6px; overflow:hidden; position:relative;">
-            <div id="trustBar"
-              style="height:100%; width:0%; transition: width 1.5s cubic-bezier(0.1, 0, 0.3, 1); background: linear-gradient(90deg, #06b6d4, #22d3ee);">
+        </div>
+      </div>
+
+      <!-- ④ TRUST SCORE -->
+      <div class="box">
+        <h3><i class="fas fa-medal"></i> Account Trust Score</h3>
+        <p style="color:#64748b; font-size:.85rem; margin-bottom:8px;">
+          Based on your login history, location, device, and <strong>night behavioral patterns</strong>:
+        </p>
+        <div class="trust-bar-wrap">
+          <div class="trust-header">
+            <span class="trust-label" id="trustLabel">Calculating...</span>
+            <span class="trust-pct" id="trustPercent">0%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" id="trustBar" style="width:0%;background:linear-gradient(90deg,#06b6d4,#22d3ee);">
             </div>
-            <div style="position:absolute; top:0; left:50%; width:2px; height:100%; background:rgba(239,68,68,0.5);"
-              title="Decision Threshold (50%)"></div>
+            <div class="bar-threshold" title="Security Threshold (50%)"></div>
           </div>
-          <p style="margin-top:10px; font-size:0.75rem; color:#64748b;">
-            <i class="fas fa-info-circle"></i> Accounts with trust scores below <b>50%</b> are flagged for additional
-            verification.
+          <p style="margin-top:10px;font-size:.75rem;color:#64748b;">
+            <i class="fas fa-info-circle"></i>
+            Accounts with a trust score below <b>50%</b> require additional identity verification.
           </p>
         </div>
       </div>
 
-      <!-- ELI5 EXPLANATION -->
+      <!-- ⑤ WHAT-IF SCENARIO -->
       <div class="box">
-        <h3>🌍 GLOBAL FEATURE IMPORTANCE (ELI5)</h3>
-        <p id="narrativeText"
-          style="color:#cbd5e1; font-style:italic; margin-bottom:15px; border-left:2px solid #06b6d4; padding-left:10px;">
-          Analyzing behavioral patterns...
-        </p>
-        <p>Top global indicators affecting this CatBoost model:</p>
-        <ul class="reason-list" id="eli5List">
-          <li>Loading global importance...</li>
-        </ul>
+        <h3><i class="fas fa-lightbulb"></i> How to Stay Protected</h3>
+        <div class="whatif-box" id="whatIfText">Loading recommendations...</div>
       </div>
 
-      <!-- FINAL DECISION -->
-      <div class="box">
-        <h3>✅ Final AI Decision</h3>
-        <p id="decisionText">
-          Evaluating risk and trust level...
-        </p>
-      </div>
+      <!-- ⑥ ADMIN TECHNICAL PANEL (hidden for regular users) -->
+      <div id="adminActionsBox" class="box admin-box" style="display:none;">
+        <h3 style="color:#ef4444;"><i class="fas fa-user-shield"></i> Admin — Technical XAI Details</h3>
+        <p id="adminUserContext" style="color:#94a3b8; margin-bottom:12px;">Reviewing profile for: loading...</p>
 
-      <!-- ADMIN ACTIONS SECTION -->
-      <div id="adminActionsBox" class="box" style="border-color:#ef4444; display:none;">
-        <h3 style="color:#ef4444;"><i class="fas fa-user-shield"></i> Admin Security Actions</h3>
-        <p id="adminUserContext" style="margin-bottom:15px; color:#94a3b8;">Reviewing security profile for: loading...
-        </p>
-        <div style="display:flex; gap:12px;">
+        <div class="admin-detail" id="adminTechDetail">Loading technical analysis...</div>
+
+        <div style="margin-top:16px;">
+          <p style="color:#94a3b8; font-size:.85rem; margin-bottom:10px;">
+            <b>CatBoost LIME Feature Contributions (raw):</b>
+          </p>
+          <ul id="adminLimeRaw"
+            style="padding-left:16px; color:#64748b; font-size:.82rem; font-family:'Courier New',monospace; line-height:2;">
+          </ul>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
           <button onclick="adminAction('block')"
-            style="background:#ef4444; color:white; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; border:none;">
+            style="background:#ef4444;color:white;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;border:none;">
             <i class="fas fa-ban"></i> Block User
           </button>
           <button onclick="adminAction('allow')"
-            style="background:#10b981; color:white; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; border:none;">
+            style="background:#10b981;color:white;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;border:none;">
             <i class="fas fa-check"></i> Authorize / Allow
           </button>
         </div>
       </div>
 
-      <div class="footer">
-        © 2026 AI Cyber Shield — Explainable AI Module
+      <!-- ⑦ PREVIOUS USER BEHAVIOUR (Admin Only) -->
+      <div id="adminUserBehaviorBox" class="box" style="display:none; border-color: #06b6d4;">
+        <h3 style="color:#06b6d4;"><i class="fas fa-history"></i> Previous User Login Behaviour</h3>
+        <p style="color:#64748b; font-size:.85rem; margin-bottom:12px;">Reviewing last 10 login attempts to identify
+          patterns and reasons for failure.</p>
+        <div id="behaviorList" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Loaded via JS -->
+          <p style="color:#94a3b8;">Loading history...</p>
+        </div>
       </div>
+
+      <div class="footer">© 2026 AI Cyber Shield — Explainable AI Module</div>
 
     </section>
   </div>
-
 
 
   <script>
     // ----- Auth Guard -----
     const savedRole = localStorage.getItem('role');
     const params = new URLSearchParams(window.location.search);
-    const targetUserId = params.get('user_id') || localStorage.getItem('user_id');
+    let targetUserId = params.get('user_id') || localStorage.getItem('user_id');
+    const isRestricted = localStorage.getItem("is_restricted") === "true";
 
     if (!savedRole || !targetUserId) {
       window.location.href = '/';
     }
 
-    // Hide admin-only links if not admin
-    if (savedRole !== "admin") {
+    if (isRestricted) {
+      document.getElementById("restrictionBanner").style.display = "flex";
+      document.querySelector(".sidebar").style.display = "none";
+      document.querySelector(".main").style.gridTemplateColumns = "1fr";
+    }
+
+    // Initialize Admin tools
+    if (savedRole === "admin") {
+      document.getElementById("adminUserPicker").style.display = "flex";
+      loadAdminUserList();
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "block");
+    } else {
       document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
     }
 
-    // ----- Fetch Latest XAI Explanation -----
+    async function loadAdminUserList() {
+      try {
+        const res = await fetch("/api/admin/users", {
+          headers: { "Authorization": localStorage.getItem("token") }
+        });
+        const users = await res.json();
+        const sel = document.getElementById("userSelector");
+        users.forEach(u => {
+          const opt = document.createElement("option");
+          opt.value = u.id;
+          opt.textContent = u.email;
+          if (u.id == targetUserId) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      } catch (e) { console.error("Failed to load user list"); }
+    }
+
+    function switchTargetUser() {
+      const newId = document.getElementById("userSelector").value;
+      if (newId) {
+        targetUserId = newId;
+        console.log("Switching to User ID:", targetUserId);
+        fetchXAI();
+      }
+    }
+
+    function resetUI() {
+      const mainCard = document.getElementById("mainExplanationCard");
+      mainCard.classList.remove("safe", "medium", "alert");
+      document.getElementById("timestampCard").style.display = "none";
+      document.getElementById("adminActionsBox").style.display = "none";
+      document.getElementById("behaviorBox")?.classList?.remove("admin-visible");
+      document.getElementById("limeReasons").innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Updating analysis...</p>';
+    }
+
     async function fetchXAI() {
       const finalDecisionEl = document.getElementById("finalDecision");
-      const limeListEl = document.getElementById("limeReasons");
-      const decisionTextEl = document.getElementById("decisionText");
+      const mainCard = document.getElementById("mainExplanationCard");
+      const mainText = document.getElementById("mainExplanationText");
+      const limeEl = document.getElementById("limeReasons");
+      const whatIfEl = document.getElementById("whatIfText");
 
-      // Loading placeholders
-      finalDecisionEl.textContent = "Loading...";
-      finalDecisionEl.className = "badge";
-      limeListEl.innerHTML = `<li>Loading explanation...</li>`;
-      decisionTextEl.textContent = "Evaluating risk and trust level...";
+      resetUI();
+      finalDecisionEl.textContent = "Syncing Profile...";
+
+      const myId = localStorage.getItem('user_id');
+
+      // ── ADMIN EXEMPTION ──
+      if (savedRole === 'admin' && targetUserId == myId) {
+        finalDecisionEl.textContent = "⚙️ Authorized";
+        finalDecisionEl.className = "badge";
+        mainCard.classList.add("safe");
+        mainText.innerHTML = `<span style="color:#06b6d4; font-weight:700;">Security Authority Mode Active.</span><br><br>As a System Developer / Administrator, your account is exempt from behavioral AI analysis. Use the selector above to audit specific user profiles.`;
+        limeEl.innerHTML = `<div class="lime-reason-item"><div class="lime-icon safe"><i class="fas fa-user-shield"></i></div><div class="lime-text">AI Analysis Bypass: System Authority Mode.</div></div>`;
+        document.getElementById("trustPercent").textContent = "100%";
+        document.getElementById("trustBar").style.width = "100%";
+        document.getElementById("trustLabel").textContent = "🛡️ AUTHORITY ACCESS";
+        document.getElementById("trustLabel").style.color = "#06b6d4";
+        whatIfEl.textContent = "No analysis required for admin-role sessions.";
+
+        // Even in exemption mode, update the context
+        document.getElementById('adminActionsBox').style.display = 'block';
+        document.getElementById('adminUserContext').innerHTML = `Reviewing security profile for: <b style="color:#06b6d4">SYSTEM ADMIN</b>`;
+        fetchUserBehavior(myId);
+        return;
+      }
 
       try {
         const response = await fetch(`/api/xai/latest?user_id=${targetUserId}`, {
@@ -314,12 +638,11 @@
           const errData = await response.json();
           if (response.status === 403 && errData.status === "blocked") {
             sessionStorage.setItem("block_info", JSON.stringify(errData));
-            window.location.href = "/blocked-account";
-            return;
+            window.location.href = "/blocked-account"; return;
           }
           if (response.status === 401 || response.status === 403) {
             alert("Unauthorized. Please login again.");
-            window.location.href = "/";
+            window.location.href = "/"; return;
           }
           throw new Error("Failed to fetch XAI data (Status: " + response.status + ")");
         }
@@ -327,96 +650,278 @@
         const data = await response.json();
 
         if (data.message) {
-          document.body.innerHTML =
-            "<h2 style='padding:40px;text-align:center;color:#94a3b8'>No suspicious activity detected.</h2>";
+          // No suspicious activity at all — safe state
+          finalDecisionEl.textContent = "✅ Safe";
+          finalDecisionEl.className = "badge badge-safe";
+          mainCard.classList.add("safe");
+          mainText.textContent = "Your login activity matches your usual device, location, and usage pattern. No unusual behavior was detected by our security system. Your account access is safe and securely permitted.";
+          limeEl.innerHTML = `
+            <div class="lime-reason-item">
+              <div class="lime-icon safe"><i class="fas fa-check"></i></div>
+              <div class="lime-text">No security concerns detected. Everything looks normal.</div>
+            </div>`;
+          document.getElementById("trustPercent").textContent = "100%";
+          document.getElementById("trustBar").style.width = "100%";
+          document.getElementById("trustLabel").textContent = "🛡️ HIGHLY TRUSTED";
+          document.getElementById("trustLabel").style.color = "#10b981";
+          whatIfEl.textContent = "Continue using your account safely. Always use a trusted device and familiar network for best security.";
           return;
         }
 
-        // Parse enhanced data if it exists
-        let enhancedData = null;
+        // Parse top_reasons JSON
+        let topData = null;
         try {
-          enhancedData = JSON.parse(data.top_reasons);
-        } catch (e) { /* Not JSON */ }
-
-        // Final decision badge
-        finalDecisionEl.textContent = `${data.decision} (${data.risk_score}%)`;
-        finalDecisionEl.className = "badge " +
-          (data.risk_score >= 70 ? "fake" : (data.risk_score >= 31 ? "medium" : "genuine"));
-
-        // Reason & Suggested Action
-        if (enhancedData) {
-          document.getElementById("narrativeText").innerHTML = `
-                <b>Reason:</b> ${enhancedData.reason}<br>
-                <div style="margin-top:10px; color:#facc15;"><b>Action:</b> ${enhancedData.suggested_action}</div>
-            `;
-
-          // Dynamic Analysis (Impact list)
-          limeListEl.innerHTML = "";
-          enhancedData.dynamic_analysis.forEach(item => {
-            const li = document.createElement("li");
-            const isPositive = item.includes("+");
-            li.innerHTML = `
-                    <i class="fas ${isPositive ? 'fa-plus-circle' : 'fa-minus-circle'}" 
-                       style="color:${isPositive ? '#ef4444' : '#10b981'}; margin-right:8px;"></i> ${item}
-                `;
-            limeListEl.appendChild(li);
-          });
-        } else {
-          document.getElementById("narrativeText").textContent = data.full_narrative || "No specific narrative available.";
-          limeListEl.innerHTML = "<li>Individual feature impact data not available.</li>";
+          topData = JSON.parse(data.top_reasons);
+        } catch (e) {
+          topData = data.top_reasons; // Fallback to raw string if old record
         }
 
-        // Trust Score logic
-        const trustVal = data.trust_score || (100 - data.risk_score);
+        const riskScore = data.risk_score || 0;
+        const decision = data.decision || "Low Risk";
+        const trustVal = data.trust_score || Math.max(100 - riskScore, 5);
+
+        // ── Final Decision Badge ──
+        if (riskScore >= 70) {
+          finalDecisionEl.textContent = "🔴 High Risk";
+          finalDecisionEl.className = "badge badge-alert";
+          mainCard.classList.add("alert");
+        } else if (riskScore >= 31) {
+          finalDecisionEl.textContent = "🟡 Medium Risk";
+          finalDecisionEl.className = "badge badge-medium";
+          mainCard.classList.add("medium");
+        } else {
+          finalDecisionEl.textContent = "🟢 Safe";
+          finalDecisionEl.className = "badge badge-safe";
+          mainCard.classList.add("safe");
+        }
+
+        // ── Main Plain-Language Explanation ──
+        let mainExplanation = "";
+
+        // If safe case, show the specific requested items
+        if (riskScore < 31) {
+          mainExplanation = `
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    <div><b style="color:#10b981;">🌍 GLOBAL FEATURE IMPORTANCE (ELI5):</b> ${data.eli5_msg || 'The system primarily checks location, device, time, and login frequency to ensure account safety.'}</div>
+                    <div><b style="color:#10b981;">LIME:</b> ${data.lime_msg || 'This login matches your usual device, location, and activity pattern, so no suspicious behavior was detected.'}</div>
+                    <div><b style="color:#10b981;">Behavior Trust Score:</b> ${data.trust_msg || 'Your current activity is highly trusted based on consistent past behavior.'}</div>
+                    <div><b style="color:#10b981;">CatBoost AI Prediction:</b> ${data.catboost_msg || 'Our AI security model analyzed this login and determined it to be safe.'}</div>
+                    <div><b style="color:#10b981;">Final AI Decision:</b> ${data.final_decision_msg || 'Access is securely permitted as the risk level is low.'}</div>
+                </div>
+            `;
+          mainText.innerHTML = mainExplanation;
+        } else {
+          if (topData) {
+            mainExplanation = topData.lime_user_prompt || topData.reason || "";
+          }
+          if (!mainExplanation) {
+            if (riskScore >= 70) {
+              mainExplanation = "Our security system detected unusual activity during your login attempt. Your login location, device, or login frequency significantly differs from your normal behavior. Your account has been temporarily restricted for 30 seconds as a protective measure.";
+            } else {
+              mainExplanation = "Our AI detected a moderate change in your login behavior. As a security precaution, we need to verify your identity before granting access to your account.";
+            }
+          }
+          mainText.textContent = mainExplanation;
+        }
+
+        // ── Login Timestamp Info ──
+        const loginTimeUTC = topData?.login_time_utc || data.created_at || "N/A";
+        const loginLoc = topData?.login_location || data.location || "Unknown";
+        const loginDev = topData?.login_device || data.device || "Unknown Device";
+
+        document.getElementById("tsLoginTime").textContent = loginTimeUTC;
+        document.getElementById("tsLocation").textContent = loginLoc;
+        document.getElementById("tsDevice").textContent = loginDev.substring(0, 40) + (loginDev.length > 40 ? "…" : "");
+        document.getElementById("tsDecision").textContent = decision;
+        document.getElementById("timestampCard").style.display = "flex";
+
+        // ── LIME — Plain-Language Behavioral Factors ──
+        limeEl.innerHTML = "";
+        let limeReasons = topData?.lime_plain_reasons || [];
+
+        if (limeReasons && limeReasons.length > 0) {
+          limeReasons.forEach(item => {
+            const isSuspicious = item.is_suspicious;
+            const li = document.createElement("div");
+            li.className = "lime-reason-item";
+            li.innerHTML = `
+              <div class="lime-icon ${isSuspicious ? 'alert' : 'safe'}">
+                <i class="fas ${isSuspicious ? 'fa-triangle-exclamation' : 'fa-check'}"></i>
+              </div>
+              <div class="lime-text">${item.reason}</div>
+            `;
+            limeEl.appendChild(li);
+          });
+        } else {
+          // Fallback: build plain-language reasons from risk score
+          const fallbackReasons = buildFallbackReasons(riskScore, topData);
+          fallbackReasons.forEach(item => {
+            const li = document.createElement("div");
+            li.className = "lime-reason-item";
+            li.innerHTML = `
+              <div class="lime-icon ${item.alert ? 'alert' : 'safe'}">
+                <i class="fas ${item.alert ? 'fa-triangle-exclamation' : 'fa-check'}"></i>
+              </div>
+              <div class="lime-text">${item.text}</div>
+            `;
+            limeEl.appendChild(li);
+          });
+        }
+
+        // ── Trust Score ──
+        const trustLabel = document.getElementById("trustLabel");
         document.getElementById("trustPercent").textContent = `${trustVal}%`;
         document.getElementById("trustBar").style.width = `${trustVal}%`;
 
-        const trustLabel = document.getElementById("trustLabel");
         if (trustVal >= 70) {
           trustLabel.textContent = "🛡️ HIGHLY TRUSTED";
           trustLabel.style.color = "#10b981";
-        } else if (trustVal >= 31) {
-          trustLabel.textContent = "🛡️ MODERATE TRUST";
+          document.getElementById("trustBar").style.background = "linear-gradient(90deg, #10b981, #34d399)";
+        } else if (trustVal >= 40) {
+          trustLabel.textContent = "⚠️ MODERATE TRUST";
           trustLabel.style.color = "#f59e0b";
+          document.getElementById("trustBar").style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
         } else {
-          trustLabel.textContent = "⚠️ LOW TRUST / ALERT";
+          trustLabel.textContent = "🚨 LOW TRUST — Verification Needed";
           trustLabel.style.color = "#ef4444";
+          document.getElementById("trustBar").style.background = "linear-gradient(90deg, #ef4444, #f87171)";
         }
 
-        // Dynamic ELI5 (Global Weights)
-        const eli5ListEl = document.getElementById("eli5List");
-        eli5ListEl.innerHTML = "";
-        const weights = (enhancedData && enhancedData.feature_weights) ? enhancedData.feature_weights : data.feature_weights;
-
-        if (weights) {
-          Object.entries(weights)
-            .sort((a, b) => b[1] - a[1]) // Sort by weight
-            .forEach(([feat, weight]) => {
-              const li = document.createElement("li");
-              const featName = feat.replace("_", " ").toUpperCase();
-              const pct = Math.round(weight * 100);
-              li.innerHTML = `<b>${featName}</b> — Overall model impact: <span style="color:#06b6d4">${pct}%</span>`;
-              eli5ListEl.appendChild(li);
-            });
+        // ── What-If / Recommendations ──
+        let whatIf = topData?.what_if || data.what_if || "";
+        if (!whatIf) {
+          whatIf = riskScore >= 70
+            ? "To avoid future access restrictions, ensure your login times remain consistent (Day vs Night). Sudden shifts to nocturnal activity after long periods of daytime use can trigger protections."
+            : riskScore >= 31
+              ? "Your login occurred during hours that slightly deviate from your usual pattern. Maintaining a consistent Day/Night schedule helps maintain a high trust score."
+              : "Your security looks great! Your login timing perfectly matches your established night/day behavioral profile.";
         }
+        whatIfEl.textContent = whatIf;
 
-        // What-if explanation
-        decisionTextEl.innerHTML = `<b>Dynamic Analysis:</b> ${data.what_if || 'No alternative scenarios.'} <br><br> <b>Threshold Logic:</b> Current system threshold is <b>50% Probability</b>. This attempt resulted in <b>${data.risk_score}%</b> probability of unauthorized access.`;
-
-        // Admin Context
+        // ── Admin Technical Panel ──
         if (savedRole === 'admin') {
+          const userEmail = data.email || "Unknown User";
           document.getElementById('adminActionsBox').style.display = 'block';
-          document.getElementById('adminUserContext').innerHTML = `Reviewing security profile for: <b style="color:#f1f5f9">${data.email || targetUserId}</b>`;
-          // Store email for actions
-          window.viewedUserEmail = data.email;
-        }
+          document.getElementById('adminUserContext').innerHTML =
+            `Reviewing security profile for: <b style="color:#22d3ee; font-size:1.1rem;">${userEmail}</b>`;
+          window.viewedUserEmail = userEmail;
 
+          // Technical detail fallback for old records
+          const failedEver = topData?.failed_ever || "—";
+          const freq24h = topData?.freq_24h || "—";
+          const contributions = topData?.contributions || [];
+          const loginUTC = topData?.login_time_utc || data.created_at || "—";
+          const displayLoc = topData?.login_location || "History Analysis Only";
+          const displayDev = topData?.login_device || "History Analysis Only";
+
+          document.getElementById("adminTechDetail").innerHTML = `
+            <span>Risk Score:</span> ${riskScore}% &nbsp;|&nbsp;
+            <span>Decision:</span> ${decision} &nbsp;|&nbsp;
+            <span>Trust Score:</span> ${trustVal}% &nbsp;|&nbsp;
+            <span>User ID:</span> ${targetUserId}<br>
+            <span>Failed Logins:</span> ${failedEver} &nbsp;|&nbsp;
+            <span>Logins (24h):</span> ${freq24h} &nbsp;|&nbsp;
+            <span>Timestamp:</span> ${loginUTC}<br>
+            <span>Location:</span> ${displayLoc} &nbsp;|&nbsp;
+            <span>Device:</span> ${(displayDev || "").substring(0, 60)}
+          `;
+
+          // Raw LIME contributions
+          const rawLimeEl = document.getElementById("adminLimeRaw");
+          rawLimeEl.innerHTML = "";
+          if (contributions.length > 0) {
+            contributions.forEach(c => {
+              const li = document.createElement("li");
+              const pct = Math.round((c.impact || (c.value * c.weight)) * 100);
+              li.textContent = `${c.feature}: value=${(c.value || 0).toFixed(3)}, weight=${(c.weight || 0).toFixed(2)}, impact=${pct}%, direction=${c.direction || 'N/A'}`;
+              rawLimeEl.appendChild(li);
+            });
+          } else if (topData?.feature_weights) {
+            // Fallback: show feature_weights if available
+            const weights = topData?.feature_weights || {};
+            Object.entries(weights).sort((a, b) => b[1] - a[1]).forEach(([feat, w]) => {
+              const li = document.createElement("li");
+              li.textContent = `${feat}: weight=${Math.round(w * 100)}%`;
+              rawLimeEl.appendChild(li);
+            });
+          }
+
+          // Fetch History
+          fetchUserBehavior(targetUserId);
+        }
       } catch (err) {
         console.error("XAI fetch error:", err);
         finalDecisionEl.textContent = "Error";
-        limeListEl.innerHTML = "<li style='color:red'>Failed to load explanations</li>";
-        decisionTextEl.textContent = "Unable to evaluate risk at this time.";
+        finalDecisionEl.className = "badge badge-alert";
+        document.getElementById("mainExplanationText").textContent = "Unable to load security explanation. Please try again.";
+        document.getElementById("limeReasons").innerHTML = `<div class="lime-reason-item"><div class="lime-icon neutral"><i class="fas fa-exclamation"></i></div><div class="lime-text" style="color:#ef4444">Failed to load explanation — check server connection.</div></div>`;
       }
+    }
+
+    async function fetchUserBehavior(userId) {
+      const behaviorBox = document.getElementById("adminUserBehaviorBox");
+      const behaviorList = document.getElementById("behaviorList");
+      behaviorBox.style.display = "block";
+
+      try {
+        const response = await fetch(`/api/admin/user-behavior?user_id=${userId}`, {
+          headers: { "Authorization": localStorage.getItem("token") }
+        });
+        if (!response.ok) throw new Error("Failed to fetch behavior history");
+
+        const data = await response.json();
+        const logs = data.logs || [];
+
+        if (logs.length === 0) {
+          behaviorList.innerHTML = `<p style="color:#94a3b8;">No login history found for this user.</p>`;
+          return;
+        }
+
+        behaviorList.innerHTML = logs.map(log => {
+          const time = new Date(log.login_time).toLocaleString();
+          const riskColor = log.risk === 'high' ? '#ef4444' : (log.risk === 'medium' ? '#f59e0b' : '#10b981');
+          const statusIcon = log.status === 'success' ? 'fa-check-circle' : 'fa-times-circle';
+
+          return `
+            <div style="background: rgba(15, 23, 42, .5); padding: 12px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, .1); font-size: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="color: #94a3b8;"><i class="fas fa-clock"></i> ${time}</span>
+                <span style="color: ${riskColor}; font-weight: 600;">${log.risk ? log.risk.toUpperCase() : 'UNKNOWN'}</span>
+              </div>
+              <div style="color: #f1f5f9;">
+                <i class="fas ${statusIcon}" style="color: ${log.status === 'success' ? '#10b981' : '#ef4444'};"></i> 
+                <b>Status:</b> ${log.status} | <b>IP:</b> ${log.ip_address}
+              </div>
+              ${(log.behavior_reason || log.top_reasons) ? `<div style="color: #94a3b8; font-size: 0.75rem; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px;">
+                <b>Reason:</b> ${log.behavior_reason || (JSON.parse(log.top_reasons || '{}').reason) || 'No specific reason recorded'}
+              </div>` : ''}
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        behaviorList.innerHTML = `<p style="color:#ef4444;">Error loading history: ${err.message}</p>`;
+      }
+    }
+
+    // Build fallback reasons from risk score (if lime_plain_reasons not available)
+    function buildFallbackReasons(riskScore, topData) {
+      const res = [];
+      // If topData is a string (old record), include it as the primary reason
+      if (typeof topData === 'string' && topData.length > 5) {
+        res.push({ text: topData, alert: riskScore >= 31 });
+      }
+
+      if (riskScore >= 70) {
+        res.push({ text: "Critical behavioral deviation detected, particularly in Night/Day usage patterns.", alert: true });
+        res.push({ text: "Access restricted temporarily as a nocturnal security measure.", alert: true });
+      } else if (riskScore >= 31) {
+        res.push({ text: "Moderate deviation detected in your typical night-time login frequency.", alert: true });
+        res.push({ text: "Identity verification requested to confirm nocturnal access.", alert: false });
+      } else {
+        res.push({ text: "Login behavior is consistent with your established Day/Night usage profile.", alert: false });
+      }
+      return res;
     }
 
     async function adminAction(action) {
@@ -427,17 +932,12 @@
       try {
         const res = await fetch("/api/admin-update-user", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": localStorage.getItem("token")
-          },
+          headers: { "Content-Type": "application/json", "Authorization": localStorage.getItem("token") },
           body: JSON.stringify({ user: window.viewedUserEmail, action: action, reason: reason })
         });
         const d = await res.json();
         alert(d.message);
-      } catch (e) {
-        alert("Action failed.");
-      }
+      } catch (e) { alert("Action failed."); }
     }
 
     // Fetch XAI data on page load

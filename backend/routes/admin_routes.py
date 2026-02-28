@@ -56,14 +56,15 @@ def admin_unblock_user(user_id, role):
 def get_admin_threats(user_id, role):
     db = get_db()
     cur = db.cursor(dictionary=True)
-    # Correctly joining with the latest IP address for each user
+    # Correctly joining with the latest IP address, location, and device for each user
     cur.execute("""
-        SELECT x.id as threat_id, u.email as user, l.ip_address as ip, x.risk_score as risk, 
-               x.decision as risk_level, x.top_reasons as reason
+        SELECT x.id as threat_id, u.id as user_id, u.email as user, l.ip_address as ip, 
+               l.location as location, l.device as device,
+               x.risk_score as risk, x.decision as risk_level, x.top_reasons as reason
         FROM xai_explanations x
         JOIN users u ON x.user_id = u.id
         LEFT JOIN (
-            SELECT t1.user_id, t1.ip_address
+            SELECT t1.user_id, t1.ip_address, t1.location, t1.device
             FROM login_logs t1
             INNER JOIN (
                 SELECT user_id, MAX(login_time) as max_time
@@ -140,3 +141,14 @@ def clear_all_blocked(user_id, role):
     cur.close()
     db.close()
     return jsonify({"message": "All accounts unblocked successfully"}), 200
+
+@admin_bp.route("/admin/users")
+@token_required(role="admin")
+def list_all_users(user_id, role):
+    db = get_db()
+    cur = db.cursor(dictionary=True)
+    cur.execute("SELECT id, email FROM users WHERE role='user'")
+    users = cur.fetchall()
+    cur.close()
+    db.close()
+    return jsonify(users)

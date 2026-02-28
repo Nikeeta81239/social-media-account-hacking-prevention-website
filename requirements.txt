@@ -4,3 +4,6 @@ mysql-connector-python
 bcrypt
 pyjwt
 requests
+pytz
+numpy
+catboost

@@ -462,7 +462,8 @@
                         <span id="modalTrustScore" class="xai-score-value">0%</span>
                     </div>
                     <div style="flex: 1; font-size: 0.85rem; color: #94a3b8;">
-                        Our Explainable AI (XAI) engine analyzed your behavioral parameters to ensure account safety.
+                        Our Explainable AI (XAI) engine analyzed your <strong>night-based behavioral usage
+                            patterns</strong> to ensure account safety.
                     </div>
                 </div>
 
@@ -542,6 +543,7 @@
                             <th>Location</th>
                             <th>Device</th>
                             <th>Status</th>
+                            <th>Reason</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -565,8 +567,15 @@
 
         // ── Auth Guard ──
         const savedRole = localStorage.getItem("role");
+        const isRestricted = localStorage.getItem("is_restricted") === "true";
+
         if (!savedRole) {
             window.location.href = "/";
+        }
+
+        // REQUIRMENT: Blocked accounts only access XAI
+        if (isRestricted) {
+            window.location.href = "/xai";
         }
 
         // Hide admin-only links if not admin
@@ -718,6 +727,7 @@
                         <td><i class="fas fa-map-marker-alt" style="color:#94a3b8;margin-right:4px;font-size:.8rem"></i>${r.loc || '—'}</td>
                         <td><i class="fas fa-laptop" style="color:#94a3b8;margin-right:4px;font-size:.8rem"></i>${r.dev || '—'}</td>
                         <td><span class="badge ${cls}">${displayStatus}</span></td>
+                        <td style="font-size: 0.7rem; color: #94a3b8; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.behavior_reason || ''}">${r.behavior_reason || '—'}</td>
                         <td>
                             <button class="btn-delete" onclick="deleteLog(${r.log_id})" title="Delete record">
                                 <i class="fas fa-trash-alt"></i>

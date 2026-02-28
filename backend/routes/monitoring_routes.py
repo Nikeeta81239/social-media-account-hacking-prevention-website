@@ -1,6 +1,6 @@
+import datetime
 from flask import Blueprint, jsonify, request
 from database import get_db
-from ai_ml.explainable_ai import generate_xai_explanation
 from security.jwt_auth import token_required
 
 monitoring_bp = Blueprint("monitoring", __name__)
@@ -14,7 +14,7 @@ def get_latest_xai(current_user_id, role):
         user_id = target_id
     else:
         user_id = current_user_id
-    
+
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
 
@@ -25,11 +25,16 @@ def get_latest_xai(current_user_id, role):
         ORDER BY x.created_at DESC
         LIMIT 1
     """, (user_id,))
-    
+
     data = cursor.fetchone()
     conn.close()
 
     if not data:
         return jsonify({"message": "No suspicious activity"}), 200
+
+    # Serialize datetime fields for JSON
+    for key, val in data.items():
+        if isinstance(val, (datetime.datetime, datetime.date)):
+            data[key] = val.strftime("%Y-%m-%d %H:%M:%S")
 
     return jsonify(data)

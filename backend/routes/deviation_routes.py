@@ -19,14 +19,17 @@ def calculate_std_deviation(values):
     return round(math.sqrt(variance), 2)
 
 
-def get_risk_level(std_dev):
-    """Risk level classification based on σ."""
-    if std_dev <= 10:
+def get_risk_level(avg_score, is_blocked=False):
+    """Sync with XAI logic: Low < 31, Med 31-69, High >= 70."""
+    if is_blocked:
+        return "Account Blocked", "🚫", "#ef4444", "Access Restricted (30s Lock)"
+    
+    if avg_score < 31:
         return "Low Risk", "🟢", "#10b981", "Login Allowed"
-    elif std_dev <= 20:
-        return "Medium Risk", "🟡", "#f59e0b", "OTP Verification"
+    elif avg_score < 70:
+        return "Medium Risk", "🟡", "#f59e0b", "OTP Verification Required"
     else:
-        return "High Risk", "🔴", "#ef4444", "Account Temporarily Locked"
+        return "High Risk", "🔴", "#ef4444", "Advanced Identity Check"
 
 
 def get_variance_category(std_dev):
@@ -77,7 +80,8 @@ def deviation_data(current_user_id, role):
         """, (user_id,))
         login_rows = cur.fetchall()
 
-        risk_map = {"low": 20, "medium": 50, "high": 80}
+        # Risk mapping for logs
+        risk_map = {"low": 20, "medium": 50, "high": 85}
         login_scores = []
         login_times = []
         for r in login_rows:
@@ -87,15 +91,27 @@ def deviation_data(current_user_id, role):
                 lt = r.get("login_time")
                 login_times.append(str(lt) if lt else "")
 
+        # Check if user is currently blocked
+        cur.execute("SELECT blocked_time FROM blocked_users WHERE user_id=%s ORDER BY blocked_time DESC LIMIT 1", (user_id,))
+        block_row = cur.fetchone()
+        is_blocked = False
+        if block_row:
+            diff = (datetime.datetime.utcnow() - block_row['blocked_time']).total_seconds()
+            if diff < 30:
+                is_blocked = True
+
         all_scores = attack_scores + login_scores
         if not all_scores:
-            continue
+            # Fallback for users with no logs yet
+            all_scores = [0]
 
         mean_score = round(sum(all_scores) / len(all_scores), 2)
         std_dev = calculate_std_deviation(all_scores)
         max_score = max(all_scores)
         min_score = min(all_scores)
-        risk_level, emoji, risk_color, action_taken = get_risk_level(std_dev)
+        
+        # Use mean_score for level classification to match XAI results
+        risk_level, emoji, risk_color, action_taken = get_risk_level(mean_score, is_blocked)
         variance_category = get_variance_category(std_dev)
 
         # ---- Feature Breakdown ----
@@ -103,6 +119,7 @@ def deviation_data(current_user_id, role):
         location_changes = 0
         device_mismatches = 0
         odd_time_logins = 0
+        night_logins = 0
 
         locations = [r.get("location") for r in login_rows if r.get("location")]
         devices   = [r.get("device")   for r in login_rows if r.get("device")]
@@ -126,13 +143,20 @@ def deviation_data(current_user_id, role):
                     h = 12
             else:
                 h = 12
-            if h < 6 or h > 22:
+            
+            # Identify night logins (11 PM - 6 AM)
+            if h < 6 or h >= 23:
+                night_logins += 1
+            
+            # Original odd time logic (extended for safety)
+            if h < 7 or h > 22:
                 odd_time_logins += 1
 
         # Feature risk contributions
         loc_risk  = min(location_changes * 20, 40)
         dev_risk  = min(device_mismatches * 10, 30)
-        time_risk = min(odd_time_logins  * 20, 40)
+        # Night-based focus for time risk
+        time_risk = min(night_logins * 25, 50) 
         computed_total_risk = loc_risk + dev_risk + time_risk
 
         feature_breakdown = {
@@ -141,6 +165,7 @@ def deviation_data(current_user_id, role):
             "device_mismatches": device_mismatches,
             "device_risk": dev_risk,
             "odd_time_logins": odd_time_logins,
+            "night_logins": night_logins,
             "time_risk": time_risk,
             "total_computed_risk": computed_total_risk
         }
@@ -163,39 +188,97 @@ def deviation_data(current_user_id, role):
         else:
             global_high += 1
 
-        # Get latest XAI explanation for full narrative
+        # Get latest XAI explanation for full narrative and plain-language reason
         cur.execute("""
-            SELECT top_reasons, risk_score FROM xai_explanations 
+            SELECT top_reasons, risk_score, decision, trust_score, created_at
+            FROM xai_explanations 
             WHERE user_id=%s ORDER BY created_at DESC LIMIT 1
         """, (user_id,))
         xai_row = cur.fetchone()
-        
-        latest_xai_reason = "Normal behavior detected (Deviation < 25%)"
+
+        latest_xai_reason = "No suspicious activity detected. Login behavior is within normal parameters."
+        latest_xai_admin_detail = "Normal behavior detected (Deviation < 25%)"
+        xai_login_time = None
+        xai_risk_score = None
+        xai_decision = "Low Risk"
+
         if xai_row:
-            latest_xai_reason = f"Latest Risk: {xai_row['risk_score']}% — Reasons: {xai_row['top_reasons']}"
+            xai_risk_score = xai_row.get("risk_score", 0)
+            xai_decision = xai_row.get("decision", "Low Risk")
+            raw_ts = xai_row.get("created_at")
+            xai_login_time = str(raw_ts) if raw_ts else None
+
+            try:
+                import json as _json
+                top_data = _json.loads(xai_row["top_reasons"] or "{}")
+
+                # ── Plain-language prompt for USER view ──
+                lime_prompt = top_data.get("lime_user_prompt") or top_data.get("reason") or ""
+                if lime_prompt:
+                    latest_xai_reason = lime_prompt
+                else:
+                    # Fallback: generate from risk score
+                    if xai_risk_score and xai_risk_score >= 70:
+                        latest_xai_reason = (
+                            "High-risk login behavior detected. Your location, device, or login frequency "
+                            "significantly deviated from your normal pattern."
+                        )
+                    elif xai_risk_score and xai_risk_score >= 31:
+                        latest_xai_reason = (
+                            "Moderate behavioral deviation detected. Identity verification was requested "
+                            "as a precautionary security measure."
+                        )
+                    else:
+                        latest_xai_reason = (
+                            "Your login activity matches your usual device, location, and usage pattern. "
+                            "No unusual behavior was detected. Your account access is safe."
+                        )
+
+                # ── Admin-level technical detail ──
+                dyn = top_data.get("dynamic_analysis", [])
+                login_time_utc = top_data.get("login_time_utc", "")
+                failed_ever = top_data.get("failed_ever", 0)
+                freq_24h = top_data.get("freq_24h", 0)
+
+                latest_xai_admin_detail = (
+                    f"Risk: {xai_risk_score}% | UTC: {login_time_utc} | "
+                    f"Failed (All Time): {failed_ever} | 24h Logins: {freq_24h} | "
+                    + " | ".join(dyn[:3])
+                )
+            except Exception as _e:
+                latest_xai_reason = f"Risk Score: {xai_risk_score}% — {xai_decision}"
+                latest_xai_admin_detail = latest_xai_reason
 
         user_deviations.append({
-            "email": user["email"],
-            "user_id": user_id,
-            "total_events": len(all_scores),
-            "mean_score": mean_score,
-            "std_deviation": std_dev,
-            "min_score": min_score,
-            "max_score": max_score,
-            "risk_level": risk_level,
-            "risk_emoji": emoji,
-            "risk_color": risk_color,
-            "action_taken": action_taken,
-            "variance_category": variance_category,
-            "feature_breakdown": feature_breakdown,
-            "current_score": current_score,
-            "historical_mean": historical_mean,
-            "score_diff": diff,
-            "comparison_status": comparison_status,
-            "score_history": score_history,
-            "time_labels": time_labels,
-            "scores": all_scores[-20:],
-            "latest_xai_reason": latest_xai_reason
+            "email":                    user["email"],
+            "user_id":                  user_id,
+            "total_events":             len(all_scores),
+            "mean_score":               mean_score,
+            "std_deviation":            std_dev,
+            "min_score":                min_score,
+            "max_score":                max_score,
+            "risk_level":               risk_level,
+            "risk_emoji":               emoji,
+            "risk_color":               risk_color,
+            "action_taken":             action_taken,
+            "variance_category":        variance_category,
+            "feature_breakdown":        feature_breakdown,
+            "current_score":            current_score,
+            "historical_mean":          historical_mean,
+            "score_diff":               diff,
+            "comparison_status":        comparison_status,
+            "score_history":            score_history,
+            "time_labels":              time_labels,
+            "scores":                   all_scores[-20:],
+            # Plain-language AI explanation (user-friendly)
+            "latest_xai_reason":        latest_xai_reason,
+            # Technical detail for admin panel
+            "latest_xai_admin_detail":  latest_xai_admin_detail,
+            # XAI metadata
+            "xai_login_time":           xai_login_time,
+            "xai_risk_score":           xai_risk_score,
+            "xai_decision":             xai_decision,
+            "is_blocked":               is_blocked
         })
 
     all_devs = [u["std_deviation"] for u in user_deviations]

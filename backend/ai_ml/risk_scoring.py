@@ -1,56 +1,63 @@
 
 import os
-import pandas as pd
-import numpy as np
-from catboost import CatBoostClassifier
 
-# Path to the trained model
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "login_risk_model.cbm")
 
-# Global model instance
 _model = None
 
 def get_model():
     global _model
     if _model is None:
-        if os.path.exists(MODEL_PATH):
-            _model = CatBoostClassifier()
-            _model.load_model(MODEL_PATH)
-        else:
-            print(f"Warning: Model not found at {MODEL_PATH}. Prediction might fail.")
+        try:
+            from catboost import CatBoostClassifier
+            if os.path.exists(MODEL_PATH):
+                _model = CatBoostClassifier()
+                _model.load_model(MODEL_PATH)
+        except Exception as e:
+            print(f"Warning: Could not load CatBoost model: {e}")
     return _model
+
 
 def predict_risk(features):
     """
-    Predicts risk using behavioral parameters:
-    - device usage
-    - geographic location
-    - login frequency
-    - failed login attempts (exceeding threshold)
+    Refined 3-tier risk model with Dynamic Deviation Sensitivity:
     
-    Risk Levels:
-    - Normal (LOW): 1-2 attempts, same device/location.
-    - Medium Risk: 3-4 attempts, or slight device/location change.
-    - High Risk: Different location, unknown device, high freq, or >5 failed attempts.
+    1. LOW RISK (score 10): 
+       - 1st & 2nd attempts (failed_attempts 0 or 1).
+    
+    2. MEDIUM RISK (score 55): 
+       - 3rd, 4th, and 5th attempts (failed_attempts 2, 3, or 4).
+       - Triggers OTP verification.
+    
+    3. HIGH RISK (score 90):
+       - Severe behavioral deviations (loc_dev >= 1.0, dev_dev >= 1.0).
+       - Extreme login frequency.
     """
-    history_count = features.get("history_count", 0)
     failed_attempts = features.get("failed_attempts", 0)
+    loc_dev         = features.get("location_deviation", 0.0)
+    dev_dev         = features.get("device_deviation", 0.0)
+    time_dev        = features.get("time_deviation", 0.0)
+    freq_24h        = features.get("frequency_counts", {}).get("24h", 0)
     
-    # 1. High Risk Scenarios (Priority)
-    # Block if: 5th+ attempt (history_count >= 4), or >5 failed attempts, or major deviations
-    if (history_count >= 4 or
-        failed_attempts >= 5 or 
-        features["location_deviation"] > 0.8 or 
-        features["device_deviation"] > 0.8 or 
-        features["frequency_counts"]["24h"] >= 5):
-        return {"level": "HIGH", "action": "BLOCK", "score": 95, "probability": 0.95}
+    # Combined behavioral deviation score
+    behavioral_deviation = max(loc_dev, dev_dev, time_dev)
 
-    # 2. Medium Risk Scenarios
-    # OTP if: 3rd or 4th attempt (history_count is 2 or 3), or moderate deviations
-    if (history_count == 2 or history_count == 3) or (0.3 < features["location_deviation"] <= 0.8) or (0.3 < features["device_deviation"] <= 0.8):
-        return {"level": "MEDIUM", "action": "OTP", "score": 55, "probability": 0.55}
+    # ── 1st & 2nd ATTEMPTS: ALWAYS ALLOW (Low Risk) ──
+    if failed_attempts < 2:
+        return {"level": "LOW", "action": "ALLOW", "score": 10}
 
-    # 3. Normal / Low Risk (Default)
-    # 1st and 2nd attempt (history_count is 0 or 1) from normal conditions
-    return {"level": "LOW", "action": "ALLOW", "score": 15, "probability": 0.15}
+    # ── MEDIUM RISK (Score 55) — OTP TARGET ──
+    # Requirement: 3rd, 4th, and 5th attempts (failed_attempts 2, 3, 4)
+    if (2 <= failed_attempts <= 4):
+        # We always trigger OTP for these attempts to ensure security sequence
+        # This overrides high-risk behavioral blocks for successful password entries.
+        return {"level": "MEDIUM", "action": "OTP", "score": 55}
+
+    # ── HIGH RISK (Score 90) ──
+    # Forced block for severe anomalies (IP/Device/Location shifts)
+    if (freq_24h >= 10 or behavioral_deviation >= 1.0):
+         return {"level": "HIGH", "action": "BLOCK", "score": 90}
+
+    # Default fallback
+    return {"level": "LOW", "action": "ALLOW", "score": 10}

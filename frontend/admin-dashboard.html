@@ -355,7 +355,8 @@
           <thead>
             <tr>
               <th>User</th>
-              <th>IP Address</th>
+              <th>IP & Location</th>
+              <th>Device</th>
               <th>Risk %</th>
               <th>Risk Level</th>
               <th>Reason / Detail</th>
@@ -381,8 +382,15 @@
 
     // ── Auth Guard ──
     const savedRole = localStorage.getItem("role");
+    const isRestricted = localStorage.getItem("is_restricted") === "true";
+
     if (!savedRole) {
       window.location.href = "/";
+    }
+
+    // REQUIRMENT: Blocked accounts only access XAI
+    if (isRestricted) {
+      window.location.href = "/xai";
     }
 
     // Hide admin-only links if not admin
@@ -396,6 +404,11 @@
 
     // Load stats
     async function loadStats() {
+      // Restriction Guard
+      if (localStorage.getItem("is_restricted") === "true") {
+        window.location.href = "/xai";
+        return;
+      }
       try {
         const res = await fetch(`${BASE_URL}/admin/dashboard`, {
           headers: { "Authorization": localStorage.getItem("token") }
@@ -456,16 +469,31 @@
         tbody.innerHTML = "";
         threats.forEach(t => {
           const risk = riskLabel(t.risk || 0);
+
+          // Parse JSON reason if available
+          let displayReason = t.reason || "—";
+          try {
+            const parsed = JSON.parse(t.reason);
+            displayReason = parsed.lime_user_prompt || parsed.reason || t.reason;
+          } catch (e) { /* not json */ }
+
+          // Clean device string
+          const cleanDevice = (t.device || "").split(" (")[0].substring(0, 30);
+
           tbody.innerHTML += `
         <tr>
           <td><i class="fas fa-user" style="color:#94a3b8;margin-right:6px"></i>${t.user}</td>
-          <td>${t.ip || '—'}</td>
+          <td style="font-size:0.75rem;">${t.ip || '—'}<br><span style="color:#64748b;">${t.location || 'Unknown'}</span></td>
+          <td title="Device: ${t.device || 'Unknown'}">${cleanDevice || '—'}</td>
           <td><strong>${t.risk ?? '—'}%</strong></td>
           <td><span class="risk-badge ${risk.cls}">${risk.label}</span></td>
-          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.reason}">${t.reason || '—'}</td>
-          <td style="display:flex;gap:6px;align-items:center;">
-            <button class="btn-action btn-block"  onclick="updateUserStatus('${t.user}','block')"><i class="fas fa-ban"></i> Block</button>
-            <button class="btn-action btn-allow"  onclick="updateUserStatus('${t.user}','allow')"><i class="fas fa-check"></i> Allow</button>
+          <td style="max-width:240px; font-size:0.8rem; line-height:1.4;" title="${displayReason}">${displayReason}</td>
+          <td style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <a href="/xai?user_id=${t.user_id}" class="btn-action btn-allow" style="text-decoration:none; display:flex; align-items:center; gap:4px;">
+              <i class="fas fa-eye"></i> View Analysis
+            </a>
+            <button class="btn-action btn-block" onclick="updateUserStatus('${t.user}','block')"><i class="fas fa-ban"></i> Block</button>
+            <button class="btn-action btn-allow" onclick="updateUserStatus('${t.user}','allow')"><i class="fas fa-check"></i> Allow</button>
             <button class="btn-delete" onclick="deleteThreat('${t.threat_id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>
           </td>
         </tr>`;

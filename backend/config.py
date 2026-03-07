@@ -3,7 +3,7 @@
 class Config:
     SECRET_KEY = "THIS_IS_A_VERY_STRONG_SECRET_KEY_32_CHARS_MINIMUM_2026"
     JWT_SECRET = "jwt-secret-key"
-
+    GEMINI_API_KEY ="AIzaSyDcQuxMRFlcU_iwzkZ7AHCv8-hQz7Sort0"
     # ✅ GMAIL SMTP (USE APP PASSWORD)
     SMTP_EMAIL = "nikeetareddy81239@gmail.com"
     SMTP_PASSWORD = "dpsszjjbpcpudnvr"

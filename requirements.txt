@@ -10,3 +10,4 @@ catboost
 gunicorn
 pandas
 scikit-learn
+google-generativeai

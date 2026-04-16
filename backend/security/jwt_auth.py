@@ -1,6 +1,7 @@
 # backend/security/jwt_auth.py
 
 import jwt
+import datetime
 from functools import wraps
 from flask import request, jsonify
 from config import Config
@@ -9,10 +10,11 @@ def generate_jwt(user_id, role, is_restricted=False):
     payload = {
         "user_id": user_id,
         "role": role,
-        "is_restricted": is_restricted
+        "is_restricted": is_restricted,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
     }
     token = jwt.encode(payload, Config.JWT_SECRET, algorithm="HS256")
-    return token
+    return token.decode('utf-8') if isinstance(token, bytes) else token
 
 def token_required(role=None):
     def decorator(f):
@@ -82,11 +84,15 @@ def token_required(role=None):
                 # PASS BOTH user_id and role to the function
                 return f(user_id, data["role"], *args, **kwargs)
 
+            except jwt.ExpiredSignatureError:
+                return jsonify({"message": "Session expired. Please log in again."}), 401
+            except jwt.InvalidTokenError as e:
+                return jsonify({"message": f"Invalid token: {str(e)}"}), 401
             except Exception as e:
                 import traceback
                 print(f"JWT ERROR: {e}")
                 traceback.print_exc()
-                return jsonify({"message": f"Invalid token or system error: {str(e)}"}), 401
+                return jsonify({"message": f"Authentication system error: {str(e)}"}), 401
 
         return wrapper
     return decorator

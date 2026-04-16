@@ -1,6 +1,7 @@
 # backend/utils/email_service.py
 
 import smtplib
+import datetime
 from email.message import EmailMessage
 from config import Config
 
@@ -25,7 +26,7 @@ If this wasn't you, please contact admin immediately.
 — AI Cyber Shield
 """)
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(Config.SMTP_EMAIL, Config.SMTP_PASSWORD)
             server.send_message(msg)
 
@@ -123,15 +124,22 @@ Mobile/Device: {network_url}/api/confirm-reset?token={token}
         msg.set_content(text_content)
         msg.add_alternative(html_content, subtype='html')
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(Config.SMTP_EMAIL, Config.SMTP_PASSWORD)
             server.send_message(msg)
 
         print(f"[SUCCESS] Security alert sent to {to_email}")
         return True
 
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"[ERROR] SMTP Authentication Failed — Gmail App Password may be invalid/expired: {e}")
+        print("[HINT] Go to myaccount.google.com/apppasswords and regenerate the App Password, then update config.py")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"[ERROR] SMTP error while sending security alert: {e}")
+        return False
     except Exception as e:
-        print(f"[ERROR] Security alert email failed: {e}")
+        print(f"[ERROR] Unexpected error in send_security_alert: {e}")
         return False
 def send_admin_security_alert(user_email, reason):
     try:
@@ -156,12 +164,13 @@ ACTION REQUIRED:
         
 — AI Cyber Shield Security Engine
 """)
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(Config.SMTP_EMAIL, Config.SMTP_PASSWORD)
             server.send_message(msg)
         return True
-    except Exception as e:
-        print(f"Admin alert failed: {e}")
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"[ERROR] Admin alert SMTP Auth Failed: {e}")
         return False
-
-import datetime
+    except Exception as e:
+        print(f"[ERROR] Admin alert failed: {e}")
+        return False

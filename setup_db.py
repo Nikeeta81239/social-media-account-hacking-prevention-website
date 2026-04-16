@@ -22,7 +22,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS users (
 cur.execute("""CREATE TABLE IF NOT EXISTS blocked_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    reason VARCHAR(100),
+    reason VARCHAR(255),
     blocked_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 )""")
@@ -32,10 +32,11 @@ cur.execute("""CREATE TABLE IF NOT EXISTS login_logs (
     user_id INT,
     login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ip_address VARCHAR(50),
-    location VARCHAR(50),
-    device VARCHAR(50),
-    status VARCHAR(20),
-    risk VARCHAR(10),
+    location VARCHAR(200),
+    device VARCHAR(255),
+    status VARCHAR(50),
+    risk VARCHAR(20),
+    behavior_reason TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id)
 )""")
 

@@ -338,65 +338,75 @@ def login():
 # ================= FORGOT PASSWORD =================
 @auth_bp.route("/forgot-password", methods=["POST"])
 def forgot_password():
-    data = request.get_json()
-    email = data.get("email")
-    device = data.get("device", "Unknown Device")
-    location = data.get("location", "Unknown Location")
-    ip = data.get("ip", request.remote_addr)
-    
-    db = get_db()
-    cur = db.cursor(dictionary=True)
-    cur.execute("SELECT * FROM users WHERE email=%s", (email,))
-    user = cur.fetchone()
-    
-    if not user:
+    try:
+        # ── Safe JSON parsing — request.get_json() returns None if body is missing/malformed
+        data = request.get_json(silent=True) or {}
+        email = data.get("email", "").strip()
+        
+        if not email:
+            return jsonify({"message": "Email address is required."}), 400
+        
+        device   = (data.get("device")   or "Unknown Device")[:200]
+        location = (data.get("location") or "Unknown Location")[:100]
+        ip       = (data.get("ip")       or request.remote_addr or "0.0.0.0")[:50]
+
+        db = get_db()
+        cur = db.cursor(dictionary=True)
+        cur.execute("SELECT * FROM users WHERE email=%s", (email,))
+        user = cur.fetchone()
         cur.close()
         db.close()
-        return jsonify({"message": "If this email is registered, a security alert has been sent."}), 200
 
-    # Sending Security Alert Email
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    # --- DUAL URL STRATEGY ---
-    # Use the same host the user is currently using (best for same-machine testing)
-    primary_url = request.host_url.rstrip('/')
-    
-    # Detect the actual network IP (best for mobile devices/other PCs)
-    local_ip = get_machine_ip()
-    port = request.host.split(':')[-1] if ':' in request.host else '5000'
-    network_url = f"http://{local_ip}:{port}"
+        # Always return 200 for security (don't reveal if email exists)
+        if not user:
+            return jsonify({"message": "If this email is registered, a security alert has been sent."}), 200
 
-    # Generate a secure reset token (valid for 15 mins)
-    reset_token = jwt.encode({
-        "reset_email": email,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
-    }, Config.JWT_SECRET, algorithm="HS256")
-    
-    # --- Debugging ---
-    print(f"\n[DEBUG] Recovery Links Generated:")
-    print(f"[PC/Local]:    {primary_url}/api/confirm-reset?token={reset_token}")
-    print(f"[Network IP]:  {network_url}/api/confirm-reset?token={reset_token}")
-    print(f"----------------------------------\n")
+        # Sending Security Alert Email
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    alert_sent = send_security_alert(
-        email, 
-        location=location, 
-        device=device, 
-        time=now,
-        ip_address=ip,
-        primary_url=primary_url,
-        network_url=network_url,
-        token=reset_token
-    )
+        # --- DUAL URL STRATEGY ---
+        primary_url = request.host_url.rstrip('/')
+        local_ip    = get_machine_ip()
+        port        = request.host.split(':')[-1] if ':' in request.host else '8080'
+        network_url = f"http://{local_ip}:{port}"
 
-    if alert_sent:
-        cur.close()
-        db.close()
-        return jsonify({"message": "Security alert sent successfully. Check your email to confirm identity."}), 200
-    
-    cur.close()
-    db.close()
-    return jsonify({"message": "Failed to send security alert."}), 500
+        # Generate a secure reset token (valid for 15 mins)
+        # NOTE: Older PyJWT (<2.0) returns bytes — always convert to str for safe URL embedding
+        reset_token_raw = jwt.encode({
+            "reset_email": email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+        }, Config.JWT_SECRET, algorithm="HS256")
+        reset_token = reset_token_raw.decode('utf-8') if isinstance(reset_token_raw, bytes) else str(reset_token_raw)
+
+        print(f"\n[DEBUG] Recovery Links Generated:")
+        print(f"[PC/Local]:   {primary_url}/api/confirm-reset?token={reset_token}")
+        print(f"[Network IP]: {network_url}/api/confirm-reset?token={reset_token}")
+        print(f"----------------------------------\n")
+
+        alert_sent = send_security_alert(
+            email,
+            location=location,
+            device=device,
+            time=now,
+            ip_address=ip,
+            primary_url=primary_url,
+            network_url=network_url,
+            token=reset_token
+        )
+
+        if alert_sent:
+            return jsonify({"message": "Security alert sent successfully. Check your email to confirm identity."}), 200
+
+        # Email failed — still return 200 but log the reset link to console as fallback
+        print(f"[FALLBACK] Email failed. Use this link manually: {primary_url}/api/confirm-reset?token={reset_token}")
+        return jsonify({"message": "Could not send email. Please check server logs or contact admin."}), 200
+
+    except Exception as e:
+        import traceback
+        print(f"[CRITICAL] forgot_password crashed: {e}")
+        traceback.print_exc()
+        return jsonify({"message": "Server error processing your request. Please try again."}), 500
+
 
 # ================= CONFIRM / DENY LINKS =================
 @auth_bp.route("/confirm-reset", methods=["GET"])
@@ -404,10 +414,15 @@ def confirm_reset():
     token = request.args.get("token")
     if not token:
         return """
-        <body style="font-family:sans-serif; text-align:center; padding:50px;">
+        <!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invalid Request</title>
+        </head>
+        <body style="font-family:sans-serif; text-align:center; padding:50px; background:#020617; color:white;">
             <h1 style="color:#ef4444;">Invalid Request</h1>
-            <p>Verification token is missing.</p>
-        </body>
+            <p>Verification token is missing. Please request a new recovery link.</p>
+        </body></html>
         """, 400
     
     try:
@@ -415,37 +430,67 @@ def confirm_reset():
         email = data["reset_email"]
         
         return f"""
+        <!DOCTYPE html>
         <html>
         <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Reset Password | AI Cyber Shield</title>
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
             <style>
-                body {{ font-family: 'Poppins', sans-serif; background: #020617; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
-                .box {{ background: #0f172a; padding: 40px; border-radius: 12px; border: 1px solid #1e293b; width: 100%; max-width: 400px; text-align: center; }}
-                input {{ width: 100%; padding: 12px; margin: 15px 0; background: #020617; border: 1px solid #334155; color: white; border-radius: 6px; box-sizing: border-box; }}
-                button {{ width: 100%; padding: 12px; background: #06b6d4; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; }}
-                button:hover {{ background: #22d3ee; }}
+                * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+                body {{ font-family: 'Poppins', sans-serif; background: #020617; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }}
+                .box {{ background: #0f172a; padding: 36px 28px; border-radius: 16px; border: 1px solid #1e293b; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 40px rgba(6,182,212,0.12); }}
+                h2 {{ color: #06b6d4; margin-bottom: 10px; font-size: 1.5rem; }}
+                p {{ color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem; }}
+                input {{ width: 100%; padding: 14px; margin: 10px 0 18px; background: #020617; border: 1px solid #334155; color: white; border-radius: 8px; font-size: 1rem; }}
+                input:focus {{ outline: none; border-color: #06b6d4; }}
+                button {{ width: 100%; padding: 14px; background: linear-gradient(90deg, #06b6d4, #0ea5e9); border: none; color: white; font-weight: 600; font-size: 1rem; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }}
+                button:hover {{ opacity: 0.9; }}
+                .icon {{ font-size: 2.5rem; margin-bottom: 16px; }}
             </style>
         </head>
         <body>
             <div class="box">
-                <h2 style="color:#06b6d4;">Reset Password</h2>
-                <p>Enter a new password for <b>{email}</b></p>
+                <div class="icon">🔐</div>
+                <h2>Set New Password</h2>
+                <p>Enter a new password for <b style="color:#e2e8f0;">{email}</b></p>
                 <form action="/api/reset-password-final" method="POST">
                     <input type="hidden" name="token" value="{token}">
-                    <input type="password" name="new_password" placeholder="New Password" required minlength="6">
-                    <button type="submit">Update Password</button>
+                    <input type="password" name="new_password" placeholder="New Password (min. 6 chars)" required minlength="6" autocomplete="new-password">
+                    <button type="submit">🔒 Update Password</button>
                 </form>
             </div>
         </body>
         </html>
         """
+    except jwt.ExpiredSignatureError:
+        return """
+        <!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Link Expired</title>
+        </head>
+        <body style="font-family:sans-serif; text-align:center; padding:50px; background:#020617; color:white;">
+            <div style="font-size:3rem;">⏰</div>
+            <h1 style="color:#f59e0b; margin-top:16px;">Link Expired</h1>
+            <p style="color:#94a3b8; margin-top:10px;">This recovery link has expired (valid for 15 minutes).<br>Please go back and click <b>Forgot Password</b> again to get a new link.</p>
+        </body></html>
+        """, 200
     except Exception as e:
-        return f"""
-        <body style="font-family:sans-serif; text-align:center; padding:50px;">
-            <h1 style="color:#ef4444;">Verification Failed</h1>
-            <p>The link may have expired or is invalid. Please request a new one.</p>
-        </body>
-        """, 401
+        print(f"[CONFIRM-RESET ERROR] {e}")
+        return """
+        <!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verification Failed</title>
+        </head>
+        <body style="font-family:sans-serif; text-align:center; padding:50px; background:#020617; color:white;">
+            <div style="font-size:3rem;">❌</div>
+            <h1 style="color:#ef4444; margin-top:16px;">Verification Failed</h1>
+            <p style="color:#94a3b8; margin-top:10px;">The link is invalid or has already been used.<br>Please request a new recovery link.</p>
+        </body></html>
+        """, 200
 
 @auth_bp.route("/reset-password-final", methods=["POST"])
 def reset_password_final():
@@ -469,26 +514,58 @@ def reset_password_final():
         root_url = request.host_url
         
         return f"""
+        <!DOCTYPE html>
         <html>
         <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Password Updated | AI Cyber Shield</title>
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
             <style>
-                body {{ font-family: 'Poppins', sans-serif; background: #020617; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
-                .box {{ background: #0f172a; padding: 40px; border-radius: 12px; border: 1px solid #1e293b; width: 100%; max-width: 400px; text-align: center; }}
-                .btn {{ display: inline-block; width: 100%; padding: 12px; background: #06b6d4; border: none; color: white; font-weight: bold; border-radius: 6px; text-decoration: none; margin-top: 20px; }}
-                .btn:hover {{ background: #22d3ee; }}
+                * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+                body {{ font-family: 'Poppins', sans-serif; background: #020617; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }}
+                .box {{ background: #0f172a; padding: 36px 28px; border-radius: 16px; border: 1px solid #1e293b; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 40px rgba(16,185,129,0.12); }}
+                h1 {{ color: #10b981; margin-bottom: 14px; font-size: 1.6rem; }}
+                p {{ color: #94a3b8; line-height: 1.6; margin-bottom: 24px; }}
+                .btn {{ display: block; width: 100%; padding: 14px; background: linear-gradient(90deg, #06b6d4, #0ea5e9); border: none; color: white; font-weight: 600; font-size: 1rem; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }}
+                .btn:hover {{ opacity: 0.9; }}
             </style>
         </head>
         <body>
             <div class="box">
-                <h1 style="color:#10b981;">Password Updated!</h1>
-                <p>Your credentials for <b>{email}</b> have been secured. You can now login with your new password.</p>
-                <a href="{root_url}" class="btn">Return to Login</a>
+                <div style="font-size:3rem; margin-bottom:16px;">✅</div>
+                <h1>Password Updated!</h1>
+                <p>Your account <b style="color:#e2e8f0;">{email}</b> is now secured.<br>You can log in with your new password.</p>
+                <a href="{root_url}" class="btn">🔑 Return to Login</a>
             </div>
         </body>
         </html>
         """
-    except:
-        return "Invalid or expired token.", 401
+    except jwt.ExpiredSignatureError:
+        return """
+        <!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family:sans-serif; text-align:center; padding:50px; background:#020617; color:white;">
+            <div style="font-size:3rem;">⏰</div>
+            <h1 style="color:#f59e0b; margin-top:16px;">Link Expired</h1>
+            <p style="color:#94a3b8; margin-top:10px;">This reset link has expired. Please request a new one.</p>
+        </body></html>
+        """, 200
+    except Exception as e:
+        print(f"[RESET-PASSWORD-FINAL ERROR] {e}")
+        return """
+        <!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family:sans-serif; text-align:center; padding:50px; background:#020617; color:white;">
+            <div style="font-size:3rem;">❌</div>
+            <h1 style="color:#ef4444; margin-top:16px;">Invalid Token</h1>
+            <p style="color:#94a3b8; margin-top:10px;">This link is invalid or has already been used.</p>
+        </body></html>
+        """, 200
 
 @auth_bp.route("/deny-reset", methods=["GET"])
 def deny_reset():
